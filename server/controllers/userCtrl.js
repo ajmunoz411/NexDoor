@@ -8,7 +8,7 @@ const getCoordinates = require('./coordinates');
 
 /*________________________________________________________________
 TABLE OF CONTENTS
-- Add a new user: 15 - 122
+- Add a new user: 17 - 122
 - Get user info object: 124 - 186
 - Get list of users ordered by highest rating: 188 - 231
 - Check if email already exists in db: 233 - 268
@@ -474,11 +474,11 @@ const userControllers = {
       res.status(418).send("error: user is a teapot");
     }
   },
+  // SEssion as cookie gets stored on local computer
+  // a version gets stored in REdis as well
+  // Authenticate checks whether the cookie on your request matches the one stored in Redis
 
 };
 
 module.exports = userControllers;
 
-// user_id fk field
-// date with timezone - expiry
-// only query for dates that have not already passed

@@ -7,6 +7,7 @@ const io = require('socket.io')(3000, {
     origin: '*',
   },
 });
+// creates session object
 const session = require('express-session');
 const router = require('./router');
 require('dotenv').config();
@@ -30,6 +31,7 @@ const redisClient = redis.createClient({
   host: process.env.REDIS_HOST,
 });
 
+// generates new session every time endpoint is hit (used as middleware)
 app.use(session({
   store: new RedisStore({ client: redisClient }),
   secret: process.env.SECRET,
