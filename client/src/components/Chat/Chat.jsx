@@ -5,6 +5,7 @@ import { io } from 'socket.io-client';
 import { useSelector } from 'react-redux';
 import { IconButton } from '@material-ui/core';
 import SendTwoToneIcon from '@material-ui/icons/SendTwoTone';
+import { DateTime } from 'luxon';
 
 const socket = io('http://localhost:3000');
 
@@ -20,7 +21,7 @@ const Chat = () => {
   //
   let user = useSelector((store) => store.currentUserReducer.userData); // from react-redux*********
   let userId = user.user_id;
-  console.log('userId: ', userId);
+  // console.log('userId: ', userId);
   const url = 'http://localhost:3500';
   const [currentMessage, setCurrentMessage] = useState('');
   const [currentTask, setCurrentTask] = useState(taskId);
@@ -32,6 +33,10 @@ const Chat = () => {
 
   const handleChange = (e) => {
     setCurrentMessage(e.target.value);
+  };
+
+  const resetInput = () => {
+    setCurrentMessage('');
   };
 
   const formatTime = (time) => {
@@ -60,8 +65,6 @@ const Chat = () => {
     const timeString = formatTime(dStr.slice(16, 21));
     const dateString = (currentMonth + 1) + "/" + currentDayOfMonth + "/" + currentYear;
 
-    console.log(timeString);
-    console.log(dateString);
     const message = {
       userId,
       firstname: firstName,
@@ -117,19 +120,61 @@ const Chat = () => {
     elem.scrollTop = elem.scrollHeight;
   }, [messages]);
 
+  // useEffect(() => {
+  //   const elem = document.getElementById('allMessages');
+  //   elem.scrollTop = elem.scrollHeight;
+  // }, []);
+
   const chatStyle = {
     position: 'relative',
-    width: '746px',
-    height: '100vh',
+    minWidth: '40%',
+    height: '75vh',
     padding: '5px',
-    borderRadius: '20px'
+    borderRadius: '20px',
   };
 
   const messageContaierStyle = {
     margin: '10px',
-    height: '89vh',
+    height: '89%',
     overflow: 'auto',
   };
+
+  const handleMessage = () => {
+    const now = DateTime.local();
+    const dateFormatted = DateTime.fromISO(now).toFormat('yyyy-MM-dd');
+    const timeFormatted = DateTime.fromISO(now).toFormat('HH:mm:ss');
+
+    const message = {
+      messageBody: currentMessage,
+      date: dateFormatted,
+      time: timeFormatted,
+    };
+
+    console.log(message);
+    axios.post(`${url}/api/messages/${taskId}/${userId}`, message)
+      .then((res) => console.log(res))
+      .then(() => resetInput())
+      .catch((err) => console.log(err));
+  };
+
+  const getMessages = () => {
+    axios.get(`${url}/api/messages/${taskId}`)
+      .then((data) => {
+        setMessages(data.data);
+      });
+  };
+
+  const [currentInterval, setCurrentInterval] = useState();
+
+  useEffect(() => {
+    getMessages();
+    if (currentInterval) {
+      clearInterval(currentInterval);
+    }
+
+    const getTimer = setInterval(getMessages, 100);
+    setCurrentInterval(getTimer);
+  }, [userId]);
 
   return (
     <div style={chatStyle}>
@@ -140,20 +185,23 @@ const Chat = () => {
           const user_1 = userId;
           // console.log(messages);
           let isUser;
-          console.log(user_1, currentUser);
-          if (user_1 === currentUser) {//set user to user id *********
+          // console.log(user_1, currentUser);
+          if (message.user_id === userId) {//set user to user id *********
             isUser = true;
           } else {
             isUser = false;
           }
-          return (<Message key={idx} message={message} isUser={isUser} />);
+          return (<Message key={idx} message={message} user={user} isUser={isUser} />);
         })}
       </div>
       <div style={{ position: 'relative', bottom: '0', right: '0', margin: '5px' }}>
         <input
           style={{ width: '45vw', borderRadius: '25px', height: '6vh', borderColor: 'grey' }}
           className="messageInput" placeholder="Write message here..." onChange={handleChange} />
-        <IconButton onClick={handleSend} > <SendTwoToneIcon /></IconButton>
+        <IconButton onClick={() => {
+          // handleSend();
+          handleMessage();
+        }} > <SendTwoToneIcon /></IconButton>
         {/* <button onClick={handleSend}>Send</button> */}
       </div>
     </div>

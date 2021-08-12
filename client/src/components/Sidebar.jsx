@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 
@@ -7,43 +8,60 @@ import {
   Dashboard,
   People,
   BarChart,
-  Layers,
   MarkunreadMailboxTwoTone,
+  Star,
 } from '@material-ui/icons';
 
 import {
   ListItem,
   ListItemIcon,
-  ListItemText,
 } from '@material-ui/core';
 
-const SidebarContainer = styled.div`
-  padding-top: 1.5em;
-  padding-right: 2em;
-  height: 100vh;
-  position: sticky;
-  top: 0;
+import {
+  SidebarContainer,
+} from './styles-App';
+
+const MyListItemText = styled.div`
+  font-size: 14px;
+  color: black;
+  font-weight: 500;
+`;
+
+const MyListItemIcon = styled(ListItemIcon)`
+  color: white;
 `;
 
 const Sidebar = () => {
+  const dispatch = useDispatch();
   const history = useHistory();
   const cookie = new Cookies();
 
   const handleHome = () => {
+    dispatch({ type: 'SET_PAGE', page: '/' });
+    dispatch({ type: 'SHOW_MAP', toggle: true });
     history.push('/');
+  };
+
+  const handleMyRequests = () => {
+    dispatch({ type: 'SET_PAGE', page: '/myrequests' });
+    dispatch({ type: 'SHOW_MAP', toggle: true });
+    history.push('/myrequests');
+  };
+
+  const handleMyTasks = () => {
+    dispatch({ type: 'SET_PAGE', page: '/mytasks' });
+    dispatch({ type: 'SHOW_MAP', toggle: true });
+    history.push('/mytasks');
+  };
+
+  const handleOpenTasks = () => {
+    dispatch({ type: 'SET_PAGE', page: '/tasks' });
+    dispatch({ type: 'SHOW_MAP', toggle: true });
+    history.push('/opentasks');
   };
 
   const handleHelpfulFeed = () => {
     history.push('/helpfulfeed');
-  };
-
-  const handleActive = () => {
-    history.push('/myactiverequest');
-  };
-
-  const handleLogOut = () => {
-    logOut();
-    history.push('/login');
   };
 
   const logOut = () => {
@@ -54,43 +72,45 @@ const Sidebar = () => {
     });
   };
 
+  const handleLogOut = () => {
+    logOut();
+    history.push('/login');
+  };
+
   return (
     <SidebarContainer>
       <ListItem button onClick={handleHome}>
-        <ListItemIcon>
+        <MyListItemIcon>
           <Dashboard />
-        </ListItemIcon>
-        <ListItemText primary="Home" />
+        </MyListItemIcon>
+        <MyListItemText>Home</MyListItemText>
       </ListItem>
-      <ListItem button>
+      <ListItem button onClick={handleMyRequests}>
         <ListItemIcon>
           <MarkunreadMailboxTwoTone />
         </ListItemIcon>
-        <ListItemText primary="My Requests" />
+        <MyListItemText>My Requests</MyListItemText>
       </ListItem>
-      <ListItem button>
+      <ListItem button onClick={handleMyTasks}>
         <ListItemIcon>
           <People />
         </ListItemIcon>
-        <ListItemText primary="Tasks" />
+        <MyListItemText>My Tasks</MyListItemText>
       </ListItem>
-      <ListItem button>
+      <ListItem button onClick={handleOpenTasks}>
         <ListItemIcon>
           <BarChart />
         </ListItemIcon>
-        <ListItemText primary="Open Tasks" />
-      </ListItem>
-      <ListItem button onClick={handleActive}>
-        <ListItemIcon>
-          <Layers />
-        </ListItemIcon>
-        <ListItemText primary="Active Tasks" />
+        <MyListItemText>Open Tasks</MyListItemText>
       </ListItem>
       <ListItem button onClick={handleHelpfulFeed}>
-        <ListItemText primary="NexDoor's Most Helpful" />
+        <ListItemIcon>
+          <Star />
+        </ListItemIcon>
+        <MyListItemText>Most Helpful</MyListItemText>
       </ListItem>
       <ListItem button onClick={handleLogOut}>
-        <ListItemText primary="Log Out" />
+        <MyListItemText>Log Out</MyListItemText>
       </ListItem>
     </SidebarContainer>
   );

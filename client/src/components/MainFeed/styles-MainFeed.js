@@ -9,9 +9,9 @@ export const SectionCard = styled.div`
   flex: 1;
   padding: 1em;
   box-shadow: 2px 2px 3px #cccccc, -1px -1px 27px #f1f2f5;
-`;
-
-export const CardHeaders = styled.div`
+  font-family: Roboto;
+  font-size: 18px;
+  font-weight: 500;
   font-family: Roboto;
   font-size: 18px;
   font-weight: 500;
@@ -22,15 +22,8 @@ export const Username = styled.div`
   font-size: 14px;
 `;
 
-export const Card = styled.div`
-  max-width: 100%;
-  margin-top: 1em;
-  padding: 0.75em 1em;
-  border-radius: 10px;
-  background-color: #FFFFFF;
+export const Card = styled(SectionCard)`
   overflow: visible;
-  flex: 1;
-  box-shadow: 2px 2px 3px #cccccc, -1px -1px 27px #f1f2f5;
   color: black;
   -webkit-transition: all 150ms ease;
   -moz-transition: all 150ms ease;
@@ -53,6 +46,12 @@ export const Row = styled.div`
   direction: row;
 `;
 
+export const RowRight = styled.div`
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+`;
+
 export const CardContent = styled.div`
   font-family: Roboto;
   margin-left: 1em;
@@ -62,6 +61,7 @@ export const Description = styled.div`
   font-size: 14px;
   margin-top: 2px;
   padding-right: 1em;
+  overflow: hidden;
   wrap: wrap;
   max-width: auto;
   font-weight: 300;
@@ -69,7 +69,9 @@ export const Description = styled.div`
 
 export const DetailsCol = styled.div`
   font-family: Roboto;
-  margin-right: 1.5em;
+  display: flex;
+  justify-content: flex-end;
+  flex-direction: column;
   text-align: right;
   color: grey;
   flex-wrap: nowrap;
@@ -79,7 +81,6 @@ export const Details = styled.div`
   font-size: 14px;
   font-weight: lighter;
   color: grey;
-  width: 140%;
 `;
 
 export const Subdetails = styled.div`
@@ -102,14 +103,10 @@ export const StatusBadge = styled.div`
   font-size: 0.75rem;
   font-weight: 400;
   transition: transform 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-  transform: scale(1) translate(-57%, -118%);
+  position: absolute;
+  transform: scale(1) translate(0%, -108%);
   transform-origin: 0% 0%;
-  box-sizing: border-box;
-`;
-
-export const StatusBadgeTasks = styled(StatusBadge)`
-transform: scale(1) translate(-10%, -118%);
-
+  margin-right: -16px;
 `;
 
 export const Button = styled.button`
@@ -136,4 +133,42 @@ export const ButtonDecline = styled(Button)`
   color: grey;
 `;
 
-// export const Effect1 = styled.div``
+export const Line = styled.hr`
+  color: #BDBDBD;
+  margin-bottom: 6px;
+  margin-top: 13px;
+`;
+
+export const SectionLine = styled(Line)`
+  margin-top: 20px;
+`;
+
+export const VerticalLineFaded = styled.div`
+  background-color: #d9d9d9;
+  width: 32px;
+  max-height: 100%;
+  border-radius: 60px;
+  border: solid;
+  border-color: #F1F2F5;
+  border-width: 15px;
+  margin: 0px 10px;
+  &:hover {
+    cursor: pointer;
+    background-color: #e1e1e1;
+  }
+`;
+
+export const SelectedTaskContainer = styled.div`
+max-width: 520px;
+max-height: 800px;
+display: flex;
+overflow: hidden;
+margin-top: 1em;
+border-radius: 10px;
+font-family: Roboto;
+-webkit-transition: 200ms linear;
+-moz-transition: 200ms linear;
+-ms-transition: 200ms linear;
+-o-transition: 200ms linear;
+transition: 200ms linear;
+`;

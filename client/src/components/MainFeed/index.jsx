@@ -1,47 +1,58 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import RequestInput from './RequestInput';
+import styled from 'styled-components';
+
+import MakeARequest from './MakeARequest';
 import OpenTask from './OpenTask';
 import MyRequest from './MyRequest';
 import MyTask from './MyTask';
 import {
-  CardHeaders,
   SectionCard,
+  SectionLine,
 } from './styles-MainFeed';
 
+const MainFeedContainer = styled.div`
+  margin: 1em;
+  min-width: 520px;
+  max-width: 520px;
+`;
+
 const MainFeed = () => {
-  const openTasks = useSelector((store) => store.tasksReducer.tasks);
-  const myTasks = useSelector((store) => store.myTasksReducer.myTasks);
-  const myRequests = useSelector((store) => store.requestsReducer.requests);
+  const myTasks = useSelector((store) => store.myTasksReducer.myTasks) || [];
+  const myRequests = useSelector((store) => store.myRequestsReducer.myRequests) || [];
+  const openTasks = useSelector((store) => store.tasksReducer.tasks) || [];
+  const page = useSelector((store) => store.currentPageReducer.page);
 
   return (
-    <div style={{ margin: '1em', maxWidth: '33%' }}>
-      <RequestInput />
-      <>
-        <SectionCard>
-          <CardHeaders>People Helping Me</CardHeaders>
-        </SectionCard>
-        {myRequests.map((request) => (
-          <MyRequest request={request} key={request.task_id} />
-        ))}
-      </>
-      <>
-        <SectionCard>
-          <CardHeaders>People I Am Helping</CardHeaders>
-        </SectionCard>
-        {myTasks.map((task) => (
-          <MyTask task={task} key={task.task_id} />
-        ))}
-      </>
-      <>
-        <SectionCard>
-          <CardHeaders>Others Requesting Help</CardHeaders>
-        </SectionCard>
-        {openTasks.map((task) => (
-          <OpenTask task={task} key={task.task_id} />
-        ))}
-      </>
-    </div>
+    <MainFeedContainer>
+      <MakeARequest />
+      {page === '/myrequests' || page === '/' ? (
+        <>
+          <SectionCard>People Helping Me</SectionCard>
+          {myRequests.map((request) => (
+            <MyRequest request={request} key={request.task_id} />
+          ))}
+        </>
+      ) : <></>}
+      <SectionLine />
+      {page === '/mytasks' || page === '/' ? (
+        <>
+          <SectionCard>People I Am Helping</SectionCard>
+          {myTasks.map((task) => (
+            <MyTask task={task} key={task.task_id} />
+          ))}
+        </>
+      ) : <></>}
+      <SectionLine />
+      {page === '/tasks' || page === '/' ? (
+        <>
+          <SectionCard>Others Requesting Help</SectionCard>
+          {openTasks.map((task) => (
+            <OpenTask task={task} key={task.task_id} />
+          ))}
+        </>
+      ) : <></>}
+    </MainFeedContainer>
   );
 };
 

@@ -2,11 +2,11 @@ import styled from 'styled-components';
 
 export const SelectedTaskContainer = styled.div`
   width: 100%;
-  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  padding: 3em 2em;
 `;
 
 export const AvatarLg = styled.img`
@@ -14,6 +14,7 @@ export const AvatarLg = styled.img`
   height: 80px;
   object-fit: cover;
   border-radius: 100%;
+  z-index: 3;
 `;
 
 export const AvatarRing = styled.div`
@@ -21,18 +22,15 @@ export const AvatarRing = styled.div`
   background: linear-gradient(297.42deg, #FF8B50 33.07%, #4496B4 78.11%, #61C0CB 88.78%);
   width: 98px;
   height: 98px;
-  top: 36px;
-  left: 201px;
   position: absolute;
-  z-index: -1;
+  z-index: 1;
 `;
 
 export const AvatarMiddleRing = styled(AvatarRing)`
   background: white;
   width: 90px;
   height: 90px;
-  top: 40px;
-  left: 205px;
+  z-index: 2;
 `;
 
 export const BackButton = styled.button`
@@ -41,6 +39,7 @@ export const BackButton = styled.button`
   background-color: white;
   font-weight: 300;
   font-size: 18px;
+  z-index: 5;
   -webkit-transition: all 100ms ease-out;
   -moz-transition: all 100ms ease-out;
   -ms-transition: all 100ms ease-out;
@@ -54,7 +53,7 @@ export const BackButton = styled.button`
 export const Username = styled.div`
   font-weight: 500;
   font-size: 16px;
-  margin-top: 1em;
+  margin-top: 1.5em;
 `;
 
 export const UserInfo = styled.div`
@@ -67,11 +66,12 @@ export const StatusText = styled(Username)`
   font-weight: 200;
   margin-top: 0.5em;
   margin-bottom: 1em;
-  font-size: 24px;
+  font-size: 22px;
+  text-align: center;
 `;
 
 export const DetailsContainer = styled.div`
-  width: 80%;
+  flex-grow: 2;
   height: auto;
   justify-content: flex-start;
   flex-direction: column;
@@ -87,6 +87,7 @@ export const DetailsContainer = styled.div`
 export const DetailsContainerTime = styled(DetailsContainer)`
   margin-left: 15px;
   flex-shrink: 2;
+  min-width: 130px;
 `;
 
 export const HeadingSmall = styled.div`
@@ -101,8 +102,16 @@ export const Row = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  width: 80%;
+  width: 100%;
   margin-top: 1em;
+`;
+
+export const RowCenter = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin-top: 1em;
+  width: 100%;
 `;
 
 export const RowSlim = styled(Row)`
@@ -118,6 +127,9 @@ flex-direction: column;
 export const ColCentered = styled(Col)`
   align-items: center;
   width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 export const Button = styled.button`
@@ -127,7 +139,7 @@ export const Button = styled.button`
   color: #4496B4;
   border-radius: 10px;
   border: none;
-  font-weight: 400;
+  font-weight: 300;
   font-size: 18px;
   -webkit-transition: all 400ms ease;
   -moz-transition: all 400ms ease;
@@ -154,6 +166,10 @@ export const ButtonClaimed = styled(Button)`
   }
 `;
 
+export const ButtonCancel = styled(Button)`
+  color: #c50000;
+`;
+
 export const ButtonClaimedDecline = styled(ButtonDecline)`
   width: 33%;
 `;
@@ -170,7 +186,7 @@ export const LineTop = styled.hr`
   margin-top: 18px;
   border-top: 10px;
   border: 1px solid #b7b7b7;
-  width: 80%;
+  width: 100%;
 `;
 
 export const LineBottom = styled(LineTop)`

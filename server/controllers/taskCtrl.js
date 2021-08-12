@@ -123,10 +123,11 @@ const taskControllers = {
     };
     getCoordinates(addressQuery)
       .then((testCoord) => {
-        coordinate = `point(${testCoord.lng},${testCoord.lat})`;
-      })
-      .then(() => {
-        queryDb();
+        coordinate = `point(${testCoord.lng},${testCoord.lat})`
+          .then(() => {
+            queryDb();
+          })
+          .catch((err) => res.status(400).send(err.stack));
       })
       .catch((err) => {
         res.status(400).send('Error getting coordinates', err.stack);
@@ -269,42 +270,6 @@ const taskControllers = {
       AND zipcode=${zipcode}
     `;
 
-    const queryStr2 = `
-      INSERT INTO nexdoor.tasks (
-        requester_id,
-        address_id,
-        description,
-        car_required,
-        physical_labor_required,
-        status,
-        category,
-        start_date,
-        end_date,
-        start_time,
-        duration,
-        timestamp_requested
-      )
-      VALUES (
-        ${userId},
-        (
-          SELECT address_id
-          FROM nexdoor.address
-          WHERE street_address='${streetAddress}'
-          AND zipcode=${zipcode}
-        ),
-        '${description}',
-        ${carRequired},
-        ${laborRequired},
-        'Open',
-        '${category}',
-        '${startDate}',
-        '${endDate}',
-        '${startTime}',
-        ${duration},
-        (SELECT CURRENT_TIMESTAMP)
-      )
-    `;
-
     const queryDb = () => {
       const queryStr3 = `
         WITH X AS (
@@ -370,9 +335,40 @@ const taskControllers = {
     db.query(queryStr1)
       .then((address) => {
         if (address.rows.length > 0) {
+          const addressId = address.rows[0].address_id;
+          const queryStr2 = `
+          INSERT INTO nexdoor.tasks (
+            requester_id,
+            address_id,
+            description,
+            car_required,
+            physical_labor_required,
+            status,
+            category,
+            start_date,
+            end_date,
+            start_time,
+            duration,
+            timestamp_requested
+          )
+          VALUES (
+            ${userId},
+            ${addressId},
+            '${description}',
+            ${carRequired},
+            ${laborRequired},
+            'Open',
+            '${category}',
+            '${startDate}',
+            '${endDate}',
+            '${startTime}',
+            ${duration},
+            (SELECT CURRENT_TIMESTAMP)
+          )
+        `;
           db.query(queryStr2)
             .then(() => {
-              res.send('Added task with old address to db');
+              res.status(200).send('Added task with old address to db');
             })
             .catch((err) => {
               res.status(400).send(err.stack);
@@ -2093,6 +2089,3 @@ const taskControllers = {
 };
 
 module.exports = taskControllers;
-
-
-// ADD REVIEWS TABLE
