@@ -1,2 +1,4 @@
-# BlueOcean
-Blue Ocean
+# Nexdoor 
+A localized neighborhood help network. 
+
+
