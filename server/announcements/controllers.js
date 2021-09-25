@@ -1,6 +1,5 @@
 /* eslint-disable max-len */
 /* eslint-disable spaced-comment */
-const db = require('../../db/index');
 const announcementsService = require('./service');
 
 /*________________________________________________________________
@@ -45,7 +44,7 @@ const announcementControllers = {
   // *************************************************************
 
   // *************************************************************
-  // ADD ANNOUNCEMENT
+  // GET ANNOUNCEMENTS
   // *************************************************************
   /*
     GET /api/announce/:quantity
@@ -63,20 +62,15 @@ const announcementControllers = {
       ]
   */
   // *************************************************************
-  getAnnouncements: (req, res) => {
+  getAnnouncements: async (req, res) => {
     const { quantity } = req.params || 25;
-    const queryStr = `
-      SELECT *
-      FROM nexdoor.announcements
-      LIMIT ${quantity}
-    ;`;
-    db.query(queryStr)
-      .then((data) => {
-        res.status(200).send(data.rows);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+
+    try {
+      const announcements = await announcementsService.getAnnouncements(quantity);
+      res.status(200).send(announcements);
+    } catch (err) {
+      console.log('err getting announcements', err.stack);
+    }
   },
   // *************************************************************
 };

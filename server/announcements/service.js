@@ -1,30 +1,7 @@
 const db = require('../../db/index');
 
 const announcementModels = {
-  // *************************************************************
-  // ADD ANNOUNCEMENT
-  // *************************************************************
-  //   Needs from Front End - UserId (optional), defaults to null
-  //   Returns - String confirmation
-  // *************************************************************
-  /*
-    POST api/announce/${userId}
-    req.body = {
-      "announcementBody": "There was a robbery at 123 East Main Street last night",
-      "date": "10/17/2020",
-      "time": "05:25"
-    }
-    res = 'Added announcement to db'
-  */
-  // *************************************************************
   addAnnouncement: async (userId, announcementBody, date, time) => {
-    // const { userId } = req.params || null;
-    // const {
-    //   announcementBody,
-    //   date,
-    //   time,
-    // } = req.body;
-
     const queryStr = `
       INSERT INTO nexdoor.announcements (
         user_id,
@@ -41,18 +18,22 @@ const announcementModels = {
       RETURNING announcement_id
     `;
 
-    // db.query(queryStr)
-    //   .then(() => {
-    //     res.status(200).send('Added announcement to db');
-    //   })
-    //   .catch((err) => {
-    //     res.status(400).send(err.stack);
-    //   });
-    const insert = await db.query(queryStr);
-    const insertId = insert.rows[0];
+    const data = await db.query(queryStr);
+    const insertId = data.rows[0];
     return insertId;
   },
-  // *************************************************************
+
+  getAnnouncements: async (quantity) => {
+    const queryStr = `
+      SELECT *
+      FROM nexdoor.announcements
+      LIMIT ${quantity}
+    ;`;
+
+    const data = await db.query(queryStr);
+    const announcements = data.rows;
+    return announcements;
+  },
 };
 
 module.exports = announcementModels;
