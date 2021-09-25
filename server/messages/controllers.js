@@ -34,7 +34,7 @@ const messagesControllers = {
       const insertId = await messagesService.addMessage(params, body);
       res.status(200).send(insertId);
     } catch (err) {
-      console.log('err adding message', err.stack);
+      res.status(400).send(err.stack);
     }
   },
   // *************************************************************
@@ -70,7 +70,7 @@ const messagesControllers = {
       const messages = await messagesService.getMessagesByTask(taskId);
       res.status(200).send(messages);
     } catch (err) {
-      console.log('err getting messages', err.stack);
+      res.status(400).send(err.stack);
     }
   },
   // *************************************************************
