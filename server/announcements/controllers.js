@@ -38,7 +38,7 @@ const announcementControllers = {
       const insertId = await announcementsService.addAnnouncement(userId, announcementBody, date, time);
       res.status(200).send(insertId);
     } catch (err) {
-      console.log('err adding announcement', err.stack);
+      res.status(400).send(err.stack);
     }
   },
   // *************************************************************
@@ -69,7 +69,7 @@ const announcementControllers = {
       const announcements = await announcementsService.getAnnouncements(quantity);
       res.status(200).send(announcements);
     } catch (err) {
-      console.log('err getting announcements', err.stack);
+      res.status(400).send(err.stack);
     }
   },
   // *************************************************************
