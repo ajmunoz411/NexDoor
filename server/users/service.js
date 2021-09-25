@@ -4,7 +4,6 @@ const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 const session = require('express-session');
 const db = require('../../db/index');
-// const getCoordinates = require('../tasks/coordinates');
 
 const userModels = {
   addUser: async (body) => {
