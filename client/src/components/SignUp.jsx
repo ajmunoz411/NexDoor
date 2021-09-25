@@ -96,7 +96,6 @@ const SignUp = () => {
       .then((response) => {
         if (response.data === true) {
           throw Error('email already exists!');
-          // console.log('email already exists!');
         } else {
           axios.post('http://localhost:3500/api/newuser', userInfo)
             .then(() => {
@@ -106,7 +105,6 @@ const SignUp = () => {
               })
                 .then((res) => {
                   if (res.status === 200) {
-                    // redirect to home page
                     getUserData(Number(res.data.user_id));
                     handleLogIn();
                   } else {

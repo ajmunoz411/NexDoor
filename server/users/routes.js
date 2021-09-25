@@ -11,6 +11,7 @@ users
   .get('/email', userCtrl.checkForEmail)
   .get('/credentials/:userId', userCtrl.getUserCredentials)
   .get('/session', userCtrl.authenticateSession)
+  .get('/login', userCtrl.authenticateLogin)
   .post('/', userCtrl.addUser);
 
 module.exports = users;
