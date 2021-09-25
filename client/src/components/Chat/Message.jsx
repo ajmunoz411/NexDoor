@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Grid, Avatar } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 import styled from 'styled-components';
 import { DateTime } from 'luxon';
 
@@ -10,11 +10,10 @@ const Row = styled.div`
 `;
 
 const Message = ({ message, user, isUser }) => {
-  // console.log(message);
   let style;
   // let profilePic = message.firstname[0];//******** uncomment
   let profilePic = 'm';
-  // console.log(profilePic);
+
   const dateStyle = {
     fontSize: '10px',
     color: 'grey',
@@ -52,12 +51,11 @@ const Message = ({ message, user, isUser }) => {
 
     return (
       <Grid container display="flex" justifyContent="flex-end">
-      <div style={style}>
-        <span style={messageStyle}>{message.message_body}</span>
-        <div style={profilePicStyle}>{user.firstname.slice(0, 1)}</div>
-        <div style={dateStyle}>{message.time} {message.date}</div>
-        {/* <span>{message.time}</span> */}
-      </div>
+        <div style={style}>
+          <span style={messageStyle}>{message.message_body}</span>
+          <div style={profilePicStyle}>{user.firstname.slice(0, 1)}</div>
+          <div style={dateStyle}>{message.time} {message.date}</div>
+        </div>
       </Grid>
     );
   }
@@ -77,22 +75,9 @@ const Message = ({ message, user, isUser }) => {
           <div style={messageStyle}>{message.message_body}</div>
         </Row>
         <div style={dateStyle2}>{DateTime.fromISO(message.time).toFormat('ccc')} {DateTime.fromISO(message.date).toFormat('HH:mm:ss')}</div>
-        {/* <span>{message.time}</span> */}
       </div>
     </Grid>
   );
-
-  const dateFormatted = DateTime.fromISO(now).toFormat('yyyy-MM-dd');
-  const timeFormatted = DateTime.fromISO(now).toFormat('HH:mm:ss');
-
-  // console.log(message.message_body)
-  // return (
-  //   <div style={style}>
-
-  //     <div>{message.message_body}</div>
-  //     {/* <span>{message.time}</span> */}
-  //   </div>
-  // );
 };
 
 export default Message;

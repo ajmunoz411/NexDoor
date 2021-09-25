@@ -22,8 +22,6 @@ const HelpfulFeed = () => {
   const bestReviews = topReviews.sort((a, b) => b.avg_rating - a.avg_rating);
 
   const topThree = bestReviews.slice(0, 2);
-  console.log('review list', bestReviews);
-  console.log('TOP 3', topThree[1].profile_picture_url);
 
   const placeholder = "NexDoor's Most Helpful";
 
@@ -42,19 +40,6 @@ const HelpfulFeed = () => {
           item xs={5}
         >
           <h1>{placeholder}</h1>
-          {/* <div>
-            <div>
-
-            </div>
-            <div>
-              <Avatar
-                style={{ height: '60px', width: '60px' }}
-                src={topThree[1].profile_picture_url} />
-            </div>
-            <div>
-
-            </div>
-          </div> */}
           {bestReviews.map((task, index) => (<User user={task} key={index} />))}
         </Grid>
       </Grid>

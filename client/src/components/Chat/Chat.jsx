@@ -46,7 +46,7 @@ const Chat = () => {
       trail = 'PM';
     }
 
-    return hour + minutes + ' ' + trail;
+    return `${hour}${minutes} ${trail}`;
   };
 
   const handleSend = () => {
@@ -56,7 +56,7 @@ const Chat = () => {
     const currentMonth = d.getMonth();
     const currentYear = d.getFullYear();
     const timeString = formatTime(dStr.slice(16, 21));
-    const dateString = (currentMonth + 1) + "/" + currentDayOfMonth + "/" + currentYear;
+    const dateString = `${currentMonth + 1}/${currentDayOfMonth}/${currentYear}`;
 
     const message = {
       userId,
@@ -176,4 +176,3 @@ const Chat = () => {
 };
 
 export default Chat;
-
