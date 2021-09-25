@@ -11,13 +11,13 @@ export default function PrivateRoute({ children, ...rest }) {
 
   function checkForSession() {
     console.log(document.cookie);
-    axios.get('http://localhost:3500/api/session', {
+    axios.get('http://localhost:3500/api/users/session', {
       headers: { 'content-type': 'application/json' },
       withCredentials: true,
     })
       .then((response) => {
         const userId = response.data.user_id;
-        axios.get(`http://localhost:3500/api/user/info/${userId}`)
+        axios.get(`http://localhost:3500/api/users/info/${userId}`)
           .then((response2) => {
             dispatch({ type: 'SET_USER', userData: response2.data });
             setIsLoaded(true);
