@@ -2,11 +2,6 @@
 /* eslint-disable spaced-comment */
 const announcementsService = require('./service');
 
-/*________________________________________________________________
-TABLE OF CONTENTS
-- Add an announcement: 10 - 57
-- Get x # of announcements: 59 - 93
-________________________________________________________________*/
 const announcementControllers = {
   // *************************************************************
   // ADD ANNOUNCEMENT
@@ -28,14 +23,14 @@ const announcementControllers = {
   // *************************************************************
   addAnnouncement: async (req, res) => {
     const { userId } = req.params || null;
-    const {
-      announcementBody,
-      date,
-      time,
-    } = req.body;
+    const body = {
+      announcementBody: req.body.announcementBody,
+      date: req.body.date,
+      time: req.body.time,
+    };
 
     try {
-      const insertId = await announcementsService.addAnnouncement(userId, announcementBody, date, time);
+      const insertId = await announcementsService.addAnnouncement(userId, body);
       res.status(200).send(insertId);
     } catch (err) {
       res.status(400).send(err.stack);

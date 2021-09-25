@@ -120,7 +120,8 @@ const taskModels = {
         '${startTime}',
         ${duration},
         (SELECT CURRENT_TIMESTAMP)
-      );
+      )
+      RETURNING task_id
     `;
 
     const data = await db.query(queryStr);
@@ -132,7 +133,7 @@ const taskModels = {
     const { userId, quantity, offset } = params;
 
     const queryStr = `
-      SELECT ROW_TO_JSON(all)
+      SELECT ROW_TO_JSON(alltasks) AS all
       FROM (
         SELECT
             task_id,
@@ -200,8 +201,7 @@ const taskModels = {
             start_time
           LIMIT ${quantity}
           OFFSET ${offset}
-        ) all
-      ) as all
+        ) alltasks
     ;`;
 
     const data = await db.query(queryStr);

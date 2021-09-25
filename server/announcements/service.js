@@ -1,7 +1,13 @@
 const db = require('../../db/index');
 
 const announcementModels = {
-  addAnnouncement: async (userId, announcementBody, date, time) => {
+  addAnnouncement: async (userId, body) => {
+    const {
+      announcementBody,
+      date,
+      time,
+    } = body;
+
     const queryStr = `
       INSERT INTO nexdoor.announcements (
         user_id,
