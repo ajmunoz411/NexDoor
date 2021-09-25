@@ -4,16 +4,8 @@ const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 const session = require('express-session');
 const db = require('../../db/index');
-const getCoordinates = require('../tasks/coordinates');
+// const getCoordinates = require('../tasks/coordinates');
 
-/*________________________________________________________________
-TABLE OF CONTENTS
-- Add a new user: 17 - 122
-- Get user info object: 124 - 186
-- Get list of users ordered by highest rating: 188 - 231
-- Check if email already exists in db: 233 - 268
-- Get a users email and password: 270 - 298
-________________________________________________________________*/
 const userModels = {
   addUser: async (body) => {
     const {
@@ -82,37 +74,8 @@ const userModels = {
     const user = data.rows[0];
     return user;
   },
-  // *************************************************************
 
-  // *************************************************************
-  // GET USER INFO BY USERID
-  // *************************************************************
-  //   Needs from Front End - userId
-  //   Returns - user object for given ID
-  // *************************************************************
-  /*
-    GET /api/user/info/${userId}
-    req.body = none;
-    res = {
-      "firstname": "Spongebob",
-      "lastname": "Squarepants",
-      "email": "ss@gmail.com",
-      "karma": 0,
-      "task_count": 0,
-      "avg_rating": 5,
-      "profile_picture_url": "https://upload.wikimedia.org/wikipedia/en/thumb/3/3b/SpongeBob_SquarePants_character.svg/1200px-SpongeBob_SquarePants_character.svg.png",
-      "address": {
-          "street_address": "538 Newcastle",
-          "city": "Los Angeles",
-          "state": "CA",
-          "zipcode": "90028",
-          "neighborhood": "Los Feliz"
-      }
-  */
-  // *************************************************************
-  getUser: (req, res) => {
-    const { userId } = req.params;
-
+  getUser: async (userId) => {
     const queryStr = `
       SELECT
         user_id,
@@ -139,53 +102,12 @@ const userModels = {
       WHERE user_id=${userId};
     `;
 
-    db.query(queryStr)
-      .then((data) => {
-        res.status(200).send(data.rows[0]);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+    const data = await db.query(queryStr);
+    const user = data.rows[0];
+    return user;
   },
-  // *************************************************************
 
-  // *************************************************************
-  // GET USERS ORDERED BY RATING
-  // *************************************************************
-  //   Needs from front end - max quantity of results, defaults to 10
-  //   Returns - array of user objects, ordered by user's average rating
-  // *************************************************************
-  /*
-    GET /users/rating/${quantity}
-    req.body = none
-    res =
-      [
-        {
-          "user_id": 36,
-          "firstname": "Erika",
-          "lastname": "Chumbles",
-          "address_id": 71,
-          "karma": 58,
-          "task_count": 15,
-          "avg_rating": 3,
-          "profile_picture_url": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Erika_Eleniak_2011.jpg",
-          "reviews": [
-              {
-                  "review_id": 1,
-                  "rating": 5,
-                  "review": "Best couch carrying help I have ever received in my life.",
-                  "requester_id": 35,
-                  "helper_id": 36
-              },
-              .....
-          ]
-        },
-        .......
-      ]
-  */
-  // *************************************************************
-  getUsersByRating: (req, res) => {
-    const { quantity } = req.params || 25;
+  getUsersByRating: async (quantity) => {
     const queryStr = `
       SELECT
         user_id,
@@ -208,55 +130,14 @@ const userModels = {
       ORDER BY avg_rating
       LIMIT ${quantity}
     `;
-    db.query(queryStr)
-      .then((data) => {
-        res.status(200).send(data.rows);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+    const data = await db.query(queryStr);
+    const users = data.rows;
+    return users;
   },
-  // *************************************************************
 
-  // *************************************************************
-  // GET USERS IN RANGE ORDERED BY RATING
-  // *************************************************************
-  //   Needs from front end - max quantity of results, defaults to 10
-  //   Returns - array of user objects, ordered by user's average rating
-  // *************************************************************
-  /*
-    GET /users/rangerating/:quantity/:userId/:range
-      req.body = none
-      res =
-        [
-          {
-            "user_id": 36,
-            "firstname": "Erika",
-            "lastname": "Chumbles",
-            "address_id": 71,
-            "karma": 58,
-            "task_count": 15,
-            "avg_rating": 3,
-            "profile_picture_url": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Erika_Eleniak_2011.jpg",
-            "reviews": [
-                {
-                    "review_id": 1,
-                    "rating": 5,
-                    "review": "Best couch carrying help I have ever received in my life.",
-                    "requester_id": 35,
-                    "helper_id": 36
-                },
-                .....
-            ]
-          },
-          .......
-        ]
-  */
-  // *************************************************************
-  getUsersInRangeByRating: (req, res) => {
-    const { userId } = req.params;
-    const { range } = req.params || 1;
-    const { quantity } = req.params || 25;
+  getUsersInRangeByRating: async (params) => {
+    const { userId, range, quantity } = params;
+
     const queryStr = `
       SELECT
         user_id,
@@ -298,37 +179,13 @@ const userModels = {
       ORDER BY avg_rating
       LIMIT ${quantity}
     `;
-    db.query(queryStr)
-      .then((data) => {
-        res.status(200).send(data.rows);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+
+    const data = await db.query(queryStr);
+    const users = data.rows;
+    return users;
   },
-  // *************************************************************
 
-
-  // *************************************************************
-  // CHECK FOR EMAIL IN DB
-  // *************************************************************
-  // Needs from Front End - email address to check
-  // Returns - boolean
-  // *************************************************************
-  /*
-    GET /api/email
-    req.body = {
-      "email": "ss@gmail.com"
-    }
-    res = true
-    req.body = {
-      "email": "thisemaildoesntexistindb@gmail.com"
-    }
-    res = false
-  */
-  // *************************************************************
-  checkForEmail: (req, res) => {
-    const { email } = req.body;
+  checkForEmail: async (email) => {
     const queryStr = `
       SELECT EXISTS (
         SELECT true FROM nexdoor.users
@@ -336,104 +193,41 @@ const userModels = {
         LIMIT 1
       )
     `;
-    db.query(queryStr)
-      .then((data) => {
-        res.status(200).send(data.rows[0].exists);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
-  },
-  // *************************************************************
 
-  // *************************************************************
-  // GET USER CREDENTIALS
-  // *************************************************************
-  /*
-    GET /api/credentials/:userId
-    req.body = none
-    res =
-      {
-        "email": "questionmaster3000@gmail.com",
-        "password": "chobiden"
-      }
-  */
-  // *************************************************************
-  getUserCredentials: (req, res) => {
-    const { userId } = req.params;
+    const data = await db.query(queryStr);
+    const result = data.rows[0].exists;
+    return result;
+  },
+
+  getUserCredentials: async (userId) => {
     const queryStr = `
       SELECT email, password
       FROM nexdoor.users
       WHERE user_id=${userId}
     ;`;
-    db.query(queryStr)
-      .then((data) => {
-        res.status(200).send(data.rows[0]);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+
+    const data = await db.query(queryStr);
+    const credentials = data.rows[0];
+    return credentials;
   },
-  // *************************************************************
 
-  // *************************************************************
-  // AUTHENTICATE USERNAME & PASSWORD
-  // *************************************************************
-  /*  Takes a username and password and, if valid, returns a session
-
-    GET /api/login
-    req.body =
-    {
-        "email": "questionmaster3000@gmail.com",
-        "password": "chobiden"
-    }
-
-    res =
-      {
-        user_id: 12345,
-      }
-  */
-  // *************************************************************
-  authenticateLogin: (req, res, next) => {
-    const { email, password } = req.body;
+  authenticateLogin: async (body) => {
+    const { email, password } = body;
     const queryStr = `
       SELECT user_id, password
       FROM nexdoor.users
       WHERE email='${email}'
     ;`;
-    db.query(queryStr)
-      .then((data) => {
-        const user_id = data.rows[0].user_id;
-        //compare passwords
-        if (!bcrypt.compareSync(password, data.rows[0].password)) {
-          res.status(404).send('error: password does not match');
-        } else {
-          //return session
-          req.session.user_id = user_id;
-          req.session.save();
-          // res.session.user_Id = user_id;
-          res.status(200).send({user_id});
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        req.session.destroy();
-        res.status(400).send(err.stack);
-      });
-  },
-  // *************************************************************
-  authenticateSession: (req, res) => {
-    if(req.session.user_id) {
-      const user_id = req.session.user_id;
-      res.status(200).send({ user_id });
-    } else {
-      res.status(418).send("error: user is a teapot");
-    }
-  },
-  // SEssion as cookie gets stored on local computer
-  // a version gets stored in REdis as well
-  // Authenticate checks whether the cookie on your request matches the one stored in Redis
 
+    const data = await db.query(queryStr);
+    const userId = data.rows[0].user_id;
+    const passwordDB = data.rows[0].password;
+    const match = bcrypt.compareSync(password, passwordDB);
+    return {
+      userId,
+      match,
+    };
+  },
 };
 
 module.exports = userModels;
