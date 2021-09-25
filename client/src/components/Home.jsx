@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import MainFeed from './MainFeed/index';
 import Header from './Header';
 import Sidebar from './Sidebar';
-// import Map from './Map';
+import Map from './Map';
 
 import {
   Body,
@@ -30,7 +30,7 @@ const MapContainer = styled.div`
 
 const Home = () => {
   const placeholder = 'placeholder';
-  console.log(placeholder);
+  // console.log(placeholder);
   return (
     <Body>
       <Header />
@@ -46,7 +46,7 @@ const Home = () => {
         >
           <Sidebar />
           <MainFeed />
-          <MapContainer />
+          <MapContainer><Map /></MapContainer>
           {/* {!showSelected && <SelectedTask />} */}
           {/* {showSelected && <MapContainer><Map /></MapContainer>} */}
           {/* {showSelected && <MapContainer />} */}

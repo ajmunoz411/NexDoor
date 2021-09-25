@@ -5,9 +5,6 @@ import axios from 'axios';
 
 const Map = () => {
   const tasks = useSelector((store) => store.tasksReducer.tasks);
-  if (!tasks) {
-    return <></>;
-  }
   const [addresses, setAddresses] = useState([]);
   const [coordinates, setCoordinates] = useState([]);
   const coordinateContainer = [];
@@ -32,7 +29,7 @@ const Map = () => {
 
   useEffect(() => {
     setAddresses(tasks);
-    // console.log(tasks);
+    console.log(tasks);
   }, [tasks]);
 
   // const getCoordinates = async (address) => {
@@ -45,27 +42,29 @@ const Map = () => {
   // };
 
   const iterateAddressesAsync = async () => {
-    for (let address of addresses) {
-      // let coordinate = await getCoordinates(address);
-      let coor = address.location.coordinate;
-      let coordinate = formatCoord(coor);
-      // console.log(coordinate);
-      coordinateContainer.push(coordinate);
-      // console.log('coordinate: ', coordinate);
+    if (addresses) {
+      for (let address of addresses) {
+        // let coordinate = await getCoordinates(address);
+        let coor = address.location.coordinate;
+        let coordinate = formatCoord(coor);
+        console.log(coordinate);
+        coordinateContainer.push(coordinate);
+        // console.log('coordinate: ', coordinate);
+      }
     }
   };
 
-  const getAddresses = () => {
-    axios.get(url + '/api/tasks/15')
-      .then((res) => {
-        // console.log(res.data);
-        setAddresses(res.data);
-      });
-  };
+  // const getAddresses = () => {
+  //   axios.get(url + '/api/tasks/15')
+  //     .then((res) => {
+  //       console.log('map data', res.data);
+  //       setAddresses(res.data);
+  //     });
+  // };
 
-  useEffect(() => {
-    getAddresses();
-  }, []);
+  // useEffect(() => {
+  //   getAddresses();
+  // }, []);
 
   useEffect(() => {
     iterateAddressesAsync()
@@ -73,7 +72,9 @@ const Map = () => {
         setCoordinates(coordinateContainer);
       });
   }, [addresses]);
-
+  if (!tasks) {
+    return <></>;
+  }
   return (
     <LoadScript
       googleMapsApiKey="AIzaSyAF8YxtZo1Y_VwXnNrmb1ErGpupP1kYniI"

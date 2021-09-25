@@ -7,7 +7,7 @@ import { IconButton } from '@material-ui/core';
 import SendTwoToneIcon from '@material-ui/icons/SendTwoTone';
 import { DateTime } from 'luxon';
 
-const socket = io('http://localhost:3000');
+const socket = io('http://localhost:3200');
 
 const Chat = () => {
   const selectedTask = useSelector((store) => store.selectedTaskReducer.task);
