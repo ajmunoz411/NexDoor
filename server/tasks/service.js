@@ -1,20 +1,7 @@
 /* eslint-disable spaced-comment */
 /* eslint-disable max-len */
 const db = require('../../db/index');
-// const getCoordinates = require('./coordinates');
-/*________________________________________________________________
-TABLE OF CONTENTS
-- Add a task with a new address (not user's home): 19 - 135
-- Add a task with a home address: 137 - 214
-- Add a task after checking if the address already exists in db: 216 - 397
-- Get x # of tasks ordered by date/time: 399 - 526
-- Get tasks in mileage range from user's home address: 528 - 680
-- Get requester tasks for a user: 682 - 805
-- Get helper tasks for a user: 807 - 937
-- Update helper on a task (and change status to pending): 939 - 968
-- Remove helper from a task (and change status to open): 970 - 999
-- Update a task status to active, completed, or closed: 1001 - 1028
-________________________________________________________________*/
+
 const taskModels = {
   addTaskNewAddress: async (userId, body) => {
     const {
@@ -910,73 +897,14 @@ const taskModels = {
     return `${taskId} deleted`;
   },
 
-  // *************************************************************
-  // GET ALL TASKS WITHIN A MILEAGE RANGE FOR A USER AT THEIR HOME ADDRESS (HELPER TASKS, REQUESTER TASKS, ALL OTHER TASKS)
-  // *************************************************************
-  // Needs from Front End - userId, range (in miles), quantity, offset (quantity and offset only apply to 'all other tasks')
-  // Returns - gigantic tasks object with keys for requested, helper, and all other which all hold arrays of task objects
-  // *************************************************************
-  /*
-    res =
-      {
-    "requested": [
-        {
-            "task_id": 35,
-            "requester": {
-                "user_id": 35,
-                "firstname": "Frank",
-                "lastname": "Putnam",
-                "email": "fput@gmail.com",
-                "address_id": 70,
-                "karma": 0,
-                "task_count": 0,
-                "avg_rating": null,
-                "profile_picture_url": "https://upload.wikimedia.org/wikipedia/commons/c/c8/Frank_Welker_Photo_Op_GalaxyCon_Richmond_2020.jpg"
-            },
-            "helper": {
-                "user_id": 36,
-                "firstname": "Erika",
-                "lastname": "Chumbles",
-                "email": "echumbles@gmail.com",
-                "address_id": 71,
-                "karma": 0,
-                "task_count": 0,
-                "avg_rating": null,
-                "profile_picture_url": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Erika_Eleniak_2011.jpg"
-            },
-            "address": {
-                "address_id": 70,
-                "street_address": "111 S Grand Ave",
-                "city": "Los Angeles",
-                "state": "CA",
-                "zipcode": 90012,
-                "neighborhood": "Downtown",
-                "coordinate": "(-118.2494494,34.0553077)"
-            },
-            "description": "I need someone to come check on my dogs once a day for the next three days. They are very friendly. Two small poodles, hypoallergenic, about 20 pounds each. Just need somone to make sure their water bowls are filled. Thank you guys!",
-            "car_required": true,
-            "physical_labor_required": "false",
-            "status": "Complete",
-            "category": "Sitting",
-            "start_date": "2021-05-13",
-            "end_date": "2021-05-16",
-            "start_time": "11:00:00",
-            "duration": 24,
-            "timestamp_requested": "2021-07-15T02:42:29.0272"
-        },
-        ......
-    ],
-    "helper": Same as above (array of task objects),
-    "allothers": Same as above (array of task objects)
-    }
-  */
-  getTasksMasterDefaultAddress: (req, res) => {
+  getTasksMasterDefaultAddress: async (params) => {
     const {
       userId,
       range,
       quantity,
       offset,
-    } = req.params;
+    } = params;
+
     const queryStr = `
       SELECT
         (
@@ -1231,40 +1159,25 @@ const taskModels = {
           ) allothers
         ) as allothers
       ;`;
-    db.query(queryStr)
-      .then((data) => {
-        res.status(200).send(data.rows[0]);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+
+    const data = await db.query(queryStr);
+    const tasks = data.rows;
+    return tasks;
   },
 
-  // *************************************************************
-  // GET ALL TASKS WITHIN A MILEAGE RANGE FOR A USER AT AN ALTERNATE ADDRESS (HELPER TASKS, REQUESTER TASKS, ALL OTHER TASKS)
-  // *************************************************************
-  // Needs from Front End - userId, range (in miles), quantity, offset (quantity and offset only apply to 'all other tasks'), alternate address info
-  // Returns - gigantic tasks object with keys for requested, helper, and all other which all hold arrays of task objects
-  // *************************************************************
-  getTasksMasterAltAddress: (req, res) => {
+  getTasksMasterAltAddress: async (params, body) => {
     const {
       userId,
       range,
       quantity,
       offset,
-    } = req.params;
+    } = params;
+
     const {
-      streetAddress,
-      city,
-      state,
-      zipcode,
-    } = req.body;
+      coordinate,
+    } = body;
 
-    const addressQuery = `${streetAddress}+${city}+${state}+${zipcode}`;
-    let coordinate;
-
-    const queryDb = () => {
-      const queryStr = `
+    const queryStr = `
       SELECT
         (
           SELECT ARRAY_TO_JSON(ARRAY_AGG(req))
@@ -1493,60 +1406,18 @@ const taskModels = {
           ) allothers
         ) as allothers
       `;
-      db.query(queryStr)
-        .then((data) => {
-          res.status(200).send(data.rows[0]);
-        })
-        .catch((err) => {
-          res.status(400).send(err.stack);
-        });
-    };
-
-    getCoordinates(addressQuery)
-      .then((testCoord) => {
-        coordinate = `point(${testCoord.lng},${testCoord.lat})`;
-      })
-      .then(() => {
-        queryDb();
-      })
-      .catch((err) => {
-        res.status(400).send('Error getting coordinates', err.stack);
-      });
+    const data = await db.query(queryStr);
+    const tasks = data.rows;
+    return tasks;
   },
 
-  // *************************************************************
-  // EDIT TASK
-  // *************************************************************
-  // Needs from Front End - task info
-  // Returns - string conf
-  // *************************************************************
-  /*
-    // PUT /task/edit
-    req.body =
-    {
-        "streetAddress": "180 Santa Monica Pier",
-        "city": "Santa Monica",
-        "state": "CA",
-        "zipcode": 90401,
-        "neighborhood": "Santa Monica",
-        "description": "I have fallen and I cannot get up. Help please",
-        "carRequired": false,
-        "laborRequired": false,
-        "category": "Favor",
-        "startDate": "2021/05/22",
-        "endDate": "2021/05/27",
-        "startTime": "08:00",
-        "duration": 2,
-        "taskId": 41
-    }
-  */
-  // *************************************************************
-  editTask: (req, res) => {
+  editTask: async (body) => {
     const {
       streetAddress,
       city,
       state,
       zipcode,
+      coordinate,
       neighborhood,
       description,
       carRequired,
@@ -1557,10 +1428,7 @@ const taskModels = {
       startTime,
       duration,
       taskId,
-    } = req.body;
-    const addressQuery = `${streetAddress}+${city}+${state}+${zipcode}`;
-    let coordinate;
-    let newAddId;
+    } = body;
 
     const queryStr1 = `
       SELECT address_id
@@ -1588,88 +1456,54 @@ const taskModels = {
         duration=${duration}
       WHERE task_id=${taskId}
     ;`;
-    const queryDbTwo = () => {
-      const queryStr4 = `
-        UPDATE nexdoor.tasks
-        SET
-          nexdoor.tasks.address_id=${newAddId},
-          description='${description}',
-          car_required=${carRequired},
-          physical_labor_required=${laborRequired},
-          category='${category}',
-          start_date='${startDate}',
-          end_date='${endDate}',
-          start_time='${startTime}',
-          duration=${duration}
-        WHERE task_id=${taskId}
-      ;`;
-      db.query(queryStr4)
-        .then(() => {
-          res.status(200).send('Task finally updated');
-        })
-        .catch((err) => {
-          res.status(400).send(err.stack);
-        });
-    };
-    const queryDbOne = () => {
-      const queryStr3 = `
-          INSERT INTO nexdoor.address
-          (
-            street_address,
-            city,
-            state,
-            zipcode,
-            neighborhood,
-            coordinate
-          )
-          VALUES
-          (
-            '${streetAddress}',
-            '${city}',
-            '${state}',
-            ${zipcode},
-            '${neighborhood}',
-            ${coordinate}
-          )
-          RETURNING address_id
-      ;`;
-      db.query(queryStr3)
-        .then((data2) => {
-          newAddId = data2.rows[0].address_id;
-        })
-        .then(() => {
-          queryDbTwo();
-        })
-        .catch((err) => {
-          res.status(400).send(err.stack);
-        });
-    };
-    db.query(queryStr1)
-      .then((data) => {
-        if (data.rows.length > 0) {
-          db.query(queryStr2)
-            .then(() => {
-              res.status(200).send(`Updated task ${taskId}`);
-            })
-            .catch((err) => {
-              res.status(400).send(err.stack);
-            });
-        } else {
-          getCoordinates(addressQuery)
-            .then((testCoord) => {
-              coordinate = `point(${testCoord.lng},${testCoord.lat})`;
-            })
-            .then(() => {
-              queryDbOne();
-            })
-            .catch((err) => {
-              res.status(400).send(err.stack);
-            });
-        }
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+    const queryStr3 = `
+      INSERT INTO nexdoor.address
+      (
+        street_address,
+        city,
+        state,
+        zipcode,
+        neighborhood,
+        coordinate
+      )
+      VALUES
+      (
+        '${streetAddress}',
+        '${city}',
+        '${state}',
+        ${zipcode},
+        '${neighborhood}',
+        ${coordinate}
+      )
+      RETURNING address_id
+    ;`;
+
+    const data1 = await db.query(queryStr1);
+    if (data1.rows.length > 0) {
+      await db.query(queryStr2);
+      return `Updated task ${taskId}`;
+    }
+
+    const data2 = await db.query(queryStr3);
+    const newAddressId = data2.rows[0].address_id;
+
+    const queryStr4 = `
+      UPDATE nexdoor.tasks
+      SET
+        nexdoor.tasks.address_id=${newAddressId},
+        description='${description}',
+        car_required=${carRequired},
+        physical_labor_required=${laborRequired},
+        category='${category}',
+        start_date='${startDate}',
+        end_date='${endDate}',
+        start_time='${startTime}',
+        duration=${duration}
+      WHERE task_id=${taskId}
+    ;`;
+
+    await db.query(queryStr4);
+    return `Updated task ${taskId}`;
   },
 };
 
