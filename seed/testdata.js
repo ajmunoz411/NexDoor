@@ -1,5 +1,3 @@
-const axios = require('axios');
-
 const users = [
   '1822 Sunset Blvd,Los Angeles,CA,90026,Echo Park,Adam,Croggins,th!sg00dpassword,acroggins@gmail.com,https://yt3.ggpht.com/ytc/AKedOLS9pqgIqwr8DKFtTl2FrNxCOAa7z7pjvWcAL7Jupw=s900-c-k-c0x00ffffff-no-rj',
   '1540 Sunset Blvd,Los Angeles,CA,90026,Echo Park,Christina,Krungle,ckufjks123,ckrungle@gmail.com,https://static.wikia.nocookie.net/gotham-inc/images/6/6a/Kristin_Kringle.png/revision/latest?cb=20150826211938',
@@ -203,29 +201,8 @@ const messages = [
   },
 ];
 
-users.forEach((user) => {
-  const pieces = user.split(',');
-  const body = {
-    streetAddress: pieces[0],
-    city: pieces[1],
-    state: pieces[2],
-    zipcode: pieces[3],
-    neighborhood: pieces[4],
-    firstName: pieces[5],
-    lastName: pieces[6],
-    password: pieces[7],
-    email: pieces[8],
-    imgUrl: pieces[9],
-  };
-  axios.post('http://localhost:3500/api/user', body);
-});
-
-tasks.forEach((task) => {
-  const { userId, body } = task;
-  axios.post(`http://localhost:3500/api/task/home/${userId}`, body);
-});
-
-messages.forEach((message) => {
-  const { taskId, userId, body } = message;
-  axios.post(`http://localhost:3500/api/messages/${taskId}/${userId}`, body);
-});
+module.exports = {
+  users,
+  tasks,
+  messages,
+};
