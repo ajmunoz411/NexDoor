@@ -11,7 +11,7 @@ tasks
   .get('/req/:userId', taskCtrl.getReqTasksByUser)
   .get('/help/:userId', taskCtrl.getHelpTasksByUser)
   .get('/range/:userId/:range', taskCtrl.getTasksInRange)
-  .get('/alt/:range', taskCtrl.getTasksInRangeAltAddress)
+  // .get('/alt/:range', taskCtrl.getTasksInRangeAltAddress)
 
   .put('/help/:taskId/:userId', taskCtrl.updateHelper)
   .put('/rmhelp/:taskId', taskCtrl.removeHelper)

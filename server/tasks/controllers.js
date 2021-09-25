@@ -370,7 +370,8 @@ const taskControllers = {
       const tasks = await tasksService.getTasks(params);
       res.status(200).send(tasks);
     } catch (err) {
-      console.log('err adding task', err.stack);
+      // console.log('err adding task', err.stack);
+      res.status(400).send(err.stack);
     }
   },
   // *************************************************************
@@ -384,7 +385,7 @@ const taskControllers = {
   //     by starting date and time
   // *************************************************************
   /*
-    GET /api/tasks/:userId/:range(in miles)
+    GET /api/tasks/range/:userId/:range(in miles)
     req.body = none
     res =
       [
@@ -436,96 +437,19 @@ const taskControllers = {
     ]
   */
   // *************************************************************
-  getTasksInRange: (req, res) => {
-    const { userId, range } = req.params;
+  getTasksInRange: async (req, res) => {
+    // const { userId, range } = req.params;
+    const params = {
+      userId: req.params.userId,
+      range: req.params.range,
+    };
 
-    const queryStr = `
-      SELECT
-        task_id,
-        (
-          SELECT ROW_TO_JSON(reqname)
-          FROM (
-            SELECT
-              user_id,
-              firstname,
-              lastname,
-              email,
-              address_id,
-              karma,
-              task_count,
-              avg_rating,
-              profile_picture_url
-            FROM nexdoor.users
-            WHERE user_id=nexdoor.tasks.requester_id
-          ) reqname
-        ) as requester,
-        (
-          SELECT ROW_TO_JSON(helpname)
-          FROM (
-            SELECT
-              user_id,
-              firstname,
-              lastname,
-              email,
-              address_id,
-              karma,
-              task_count,
-              avg_rating,
-              profile_picture_url
-            FROM nexdoor.users
-            WHERE user_id=nexdoor.tasks.helper_id
-          ) helpname
-        ) AS helper,
-        (
-          SELECT ROW_TO_JSON(loc)
-          FROM (
-            SELECT *
-            FROM nexdoor.address
-            WHERE address_id=nexdoor.tasks.address_id
-          ) loc
-        ) AS address,
-        description,
-        car_required,
-        physical_labor_required,
-        status,
-        category,
-        start_date,
-        end_date,
-        start_time,
-        duration,
-        timestamp_requested
-      FROM nexdoor.tasks
-      WHERE (
-        (
-          SELECT coordinate
-          FROM nexdoor.address
-          WHERE address_id=nexdoor.tasks.address_id
-        )
-        <@>
-        (
-          SELECT coordinate
-          FROM nexdoor.address
-          WHERE address_id=
-            (
-              SELECT address_id
-              FROM nexdoor.users
-              WHERE user_id=${userId}
-            )
-          ) < ${range}
-        )
-      ORDER BY
-        start_date,
-        start_time
-      LIMIT 100;
-    `;
-
-    db.query(queryStr)
-      .then((data) => {
-        res.status(200).send(data.rows);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+    try {
+      const tasks = await tasksService.getTasksInRange(params);
+      res.status(200).send(tasks);
+    } catch (err) {
+      console.log('err getting tasks in range', err.stack);
+    }
   },
   // *************************************************************
 
@@ -596,108 +520,108 @@ const taskControllers = {
       ]
   */
   // *************************************************************
-  getTasksInRangeAltAddress: (req, res) => {
-    const { range } = req.params;
-    const {
-      streetAddress,
-      city,
-      state,
-      zipcode,
-    } = req.body;
-    const addressQuery = `${streetAddress}+${city}+${state}+${zipcode}`;
-    let coordinate;
+  // getTasksInRangeAltAddress: (req, res) => {
+  //   const { range } = req.params;
+  //   const {
+  //     streetAddress,
+  //     city,
+  //     state,
+  //     zipcode,
+  //   } = req.body;
+  //   const addressQuery = `${streetAddress}+${city}+${state}+${zipcode}`;
+  //   let coordinate;
 
-    const queryDb = () => {
-      const queryStr = `
-        SELECT
-          task_id,
-          (
-            SELECT ROW_TO_JSON(reqname)
-            FROM (
-              SELECT
-                user_id,
-                firstname,
-                lastname,
-                email,
-                address_id,
-                karma,
-                task_count,
-                avg_rating,
-                profile_picture_url
-              FROM nexdoor.users
-              WHERE user_id=nexdoor.tasks.requester_id
-            ) reqname
-          ) as requester,
-          (
-            SELECT ROW_TO_JSON(helpname)
-            FROM (
-              SELECT
-                user_id,
-                firstname,
-                lastname,
-                email,
-                address_id,
-                karma,
-                task_count,
-                avg_rating,
-                profile_picture_url
-              FROM nexdoor.users
-              WHERE user_id=nexdoor.tasks.helper_id
-            ) helpname
-          ) AS helper,
-          (
-            SELECT ROW_TO_JSON(loc)
-            FROM (
-              SELECT *
-              FROM nexdoor.address
-              WHERE address_id=nexdoor.tasks.address_id
-            ) loc
-          ) AS address,
-          description,
-          car_required,
-          physical_labor_required,
-          status,
-          category,
-          start_date,
-          end_date,
-          start_time,
-          duration,
-          timestamp_requested
-        FROM nexdoor.tasks
-        WHERE (
-          (
-            SELECT coordinate
-            FROM nexdoor.address
-            WHERE address_id=nexdoor.tasks.address_id
-          )
-          <@>
-          (${coordinate})
-        ) < ${range}
-        ORDER BY
-          start_date,
-          start_time
-        LIMIT 100;
-      ;`;
-      db.query(queryStr)
-        .then((data) => {
-          res.status(200).send(data.rows);
-        })
-        .catch((err) => {
-          res.status(400).send(err.stack);
-        });
-    };
+  //   const queryDb = () => {
+  //     const queryStr = `
+  //       SELECT
+  //         task_id,
+  //         (
+  //           SELECT ROW_TO_JSON(reqname)
+  //           FROM (
+  //             SELECT
+  //               user_id,
+  //               firstname,
+  //               lastname,
+  //               email,
+  //               address_id,
+  //               karma,
+  //               task_count,
+  //               avg_rating,
+  //               profile_picture_url
+  //             FROM nexdoor.users
+  //             WHERE user_id=nexdoor.tasks.requester_id
+  //           ) reqname
+  //         ) as requester,
+  //         (
+  //           SELECT ROW_TO_JSON(helpname)
+  //           FROM (
+  //             SELECT
+  //               user_id,
+  //               firstname,
+  //               lastname,
+  //               email,
+  //               address_id,
+  //               karma,
+  //               task_count,
+  //               avg_rating,
+  //               profile_picture_url
+  //             FROM nexdoor.users
+  //             WHERE user_id=nexdoor.tasks.helper_id
+  //           ) helpname
+  //         ) AS helper,
+  //         (
+  //           SELECT ROW_TO_JSON(loc)
+  //           FROM (
+  //             SELECT *
+  //             FROM nexdoor.address
+  //             WHERE address_id=nexdoor.tasks.address_id
+  //           ) loc
+  //         ) AS address,
+  //         description,
+  //         car_required,
+  //         physical_labor_required,
+  //         status,
+  //         category,
+  //         start_date,
+  //         end_date,
+  //         start_time,
+  //         duration,
+  //         timestamp_requested
+  //       FROM nexdoor.tasks
+  //       WHERE (
+  //         (
+  //           SELECT coordinate
+  //           FROM nexdoor.address
+  //           WHERE address_id=nexdoor.tasks.address_id
+  //         )
+  //         <@>
+  //         (${coordinate})
+  //       ) < ${range}
+  //       ORDER BY
+  //         start_date,
+  //         start_time
+  //       LIMIT 100;
+  //     ;`;
+  //     db.query(queryStr)
+  //       .then((data) => {
+  //         res.status(200).send(data.rows);
+  //       })
+  //       .catch((err) => {
+  //         res.status(400).send(err.stack);
+  //       });
+  //   };
 
-    getCoordinates(addressQuery)
-      .then((testCoord) => {
-        coordinate = `point(${testCoord.lng},${testCoord.lat})`;
-      })
-      .then(() => {
-        queryDb();
-      })
-      .catch((err) => {
-        res.status(400).send('Error getting coordinates', err.stack);
-      });
-  },
+  //   getCoordinates(addressQuery)
+  //     .then((testCoord) => {
+  //       coordinate = `point(${testCoord.lng},${testCoord.lat})`;
+  //     })
+  //     .then(() => {
+  //       queryDb();
+  //     })
+  //     .catch((err) => {
+  //       res.status(400).send('Error getting coordinates', err.stack);
+  //     });
+  // },
   // *************************************************************
 
   // *************************************************************
@@ -751,77 +675,16 @@ const taskControllers = {
       ]
   */
   // *************************************************************
-  getReqTasksByUser: (req, res) => {
+  getReqTasksByUser: async (req, res) => {
     const { userId } = req.params;
-    const queryStr = `
-      SELECT
-        task_id,
-        (
-          SELECT ROW_TO_JSON(reqname)
-          FROM (
-            SELECT
-              user_id,
-              firstname,
-              lastname,
-              email,
-              address_id,
-              karma,
-              task_count,
-              avg_rating,
-              profile_picture_url
-            FROM nexdoor.users
-            WHERE user_id=${userId}
-          ) reqname
-        ) as requester,
-        (
-          SELECT ROW_TO_JSON(helpname)
-          FROM (
-            SELECT
-              user_id,
-              firstname,
-              lastname,
-              email,
-              address_id,
-              karma,
-              task_count,
-              avg_rating,
-              profile_picture_url
-            FROM nexdoor.users
-            WHERE user_id=nexdoor.tasks.helper_id
-          ) helpname
-        ) as helper,
-        (
-          SELECT ROW_TO_JSON(loc)
-          FROM (
-            SELECT *
-            FROM nexdoor.address
-            WHERE address_id=nexdoor.tasks.address_id
-          ) loc
-        ) as location,
-        description,
-        car_required,
-        physical_labor_required,
-        status,
-        category,
-        start_date,
-        end_date,
-        start_time,
-        duration,
-        timestamp_requested
-      FROM nexdoor.tasks
-      WHERE requester_id=${userId}
-      ORDER BY
-        start_date,
-        start_time
-    ;`;
 
-    db.query(queryStr)
-      .then((data) => {
-        res.status(200).send(data.rows);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+    try {
+      const tasks = await tasksService.getReqTasksByUser(userId);
+      res.status(200).send(tasks);
+    } catch (err) {
+      // console.log('err getting tasks in range', err.stack);
+      res.status(400).send(err.stack);
+    }
   },
   // *************************************************************
 

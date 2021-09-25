@@ -400,71 +400,9 @@ const taskModels = {
     const tasks = data.rows;
     return tasks;
   },
-  // *************************************************************
 
-  // *************************************************************
-  // GET TASKS IN RANGE
-  // *************************************************************
-  //   Needs from Front End - UserId(int), Range(in miles)(int or float)
-  //   Return - Array of task objects, each returned task object falls within
-  //     the given range in miles from the given userId's home address, array is sorted
-  //     by starting date and time
-  // *************************************************************
-  /*
-    GET /api/tasks/:userId/:range(in miles)
-    req.body = none
-    res =
-      [
-        {
-          "task_id": 14,
-          "requester": {
-              "user_id": 16,
-              "firstname": "Franklin",
-              "lastname": "Doogan",
-              "email": "fdoog@gmail.com",
-              "address_id": 41,
-              "karma": 5,
-              "task_count": 15,
-              "avg_rating": 4,
-              "profile_picture_url": "https://www.indiewire.com/wp-content/uploads/2017/06/0000246240.jpg"
-          },
-          "helper": {
-              "user_id": 17,
-              "firstname": "Jenny",
-              "lastname": "Cho",
-              "email": "questionmaster3000@gmail.com",
-              "address_id": 42,
-              "karma": 64,
-              "task_count": 28,
-              "avg_rating": 5,
-              "profile_picture_url": "https://media-exp1.licdn.com/dms/image/C5603AQEVw__BKGBOdw/profile-displayphoto-shrink_200_200/0/1551395086203?e=1631750400&v=beta&t=yMuQBb8y5FTMWUZfBUKUFvACe8Mbv5z_8aaCAQxaSH0"
-          },
-          "address": {
-              "address_id": 41,
-              "street_address": "8906 Dorrington Ave",
-              "city": "Los Angeles",
-              "state": "CA",
-              "zipcode": 90048,
-              "neighborhood": "West Hollywood",
-              "coordinate": "(-118.386511,34.079391)"
-          },
-          "description": "help me with life",
-          "car_required": false,
-          "physical_labor_required": "false",
-          "status": "open",
-          "category": "favor",
-          "start_date": "2021-07-21T07:00:00.000Z",
-          "end_date": "2021-07-24T07:00:00.000Z",
-          "start_time": "12:00:00",
-          "duration": 4,
-          "timestamp_requested": "2021-07-15T02:40:51.331Z"
-      },
-      .......
-    ]
-  */
-  // *************************************************************
-  getTasksInRange: (req, res) => {
-    const { userId, range } = req.params;
+  getTasksInRange: async (params) => {
+    const { userId, range } = params;
 
     const queryStr = `
       SELECT
@@ -546,13 +484,9 @@ const taskModels = {
       LIMIT 100;
     `;
 
-    db.query(queryStr)
-      .then((data) => {
-        res.status(200).send(data.rows);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+    const data = await db.query(queryStr);
+    const tasks = data.rows;
+    return tasks;
   },
   // *************************************************************
 
@@ -623,163 +557,111 @@ const taskModels = {
       ]
   */
   // *************************************************************
-  getTasksInRangeAltAddress: (req, res) => {
-    const { range } = req.params;
-    const {
-      streetAddress,
-      city,
-      state,
-      zipcode,
-    } = req.body;
-    const addressQuery = `${streetAddress}+${city}+${state}+${zipcode}`;
-    let coordinate;
+  // getTasksInRangeAltAddress: (req, res) => {
+  //   const { range } = req.params;
+  //   const {
+  //     streetAddress,
+  //     city,
+  //     state,
+  //     zipcode,
+  //   } = req.body;
+  //   const addressQuery = `${streetAddress}+${city}+${state}+${zipcode}`;
+  //   let coordinate;
 
-    const queryDb = () => {
-      const queryStr = `
-        SELECT
-          task_id,
-          (
-            SELECT ROW_TO_JSON(reqname)
-            FROM (
-              SELECT
-                user_id,
-                firstname,
-                lastname,
-                email,
-                address_id,
-                karma,
-                task_count,
-                avg_rating,
-                profile_picture_url
-              FROM nexdoor.users
-              WHERE user_id=nexdoor.tasks.requester_id
-            ) reqname
-          ) as requester,
-          (
-            SELECT ROW_TO_JSON(helpname)
-            FROM (
-              SELECT
-                user_id,
-                firstname,
-                lastname,
-                email,
-                address_id,
-                karma,
-                task_count,
-                avg_rating,
-                profile_picture_url
-              FROM nexdoor.users
-              WHERE user_id=nexdoor.tasks.helper_id
-            ) helpname
-          ) AS helper,
-          (
-            SELECT ROW_TO_JSON(loc)
-            FROM (
-              SELECT *
-              FROM nexdoor.address
-              WHERE address_id=nexdoor.tasks.address_id
-            ) loc
-          ) AS address,
-          description,
-          car_required,
-          physical_labor_required,
-          status,
-          category,
-          start_date,
-          end_date,
-          start_time,
-          duration,
-          timestamp_requested
-        FROM nexdoor.tasks
-        WHERE (
-          (
-            SELECT coordinate
-            FROM nexdoor.address
-            WHERE address_id=nexdoor.tasks.address_id
-          )
-          <@>
-          (${coordinate})
-        ) < ${range}
-        ORDER BY
-          start_date,
-          start_time
-        LIMIT 100;
-      ;`;
-      db.query(queryStr)
-        .then((data) => {
-          res.status(200).send(data.rows);
-        })
-        .catch((err) => {
-          res.status(400).send(err.stack);
-        });
-    };
+  //   const queryDb = () => {
+  //     const queryStr = `
+  //       SELECT
+  //         task_id,
+  //         (
+  //           SELECT ROW_TO_JSON(reqname)
+  //           FROM (
+  //             SELECT
+  //               user_id,
+  //               firstname,
+  //               lastname,
+  //               email,
+  //               address_id,
+  //               karma,
+  //               task_count,
+  //               avg_rating,
+  //               profile_picture_url
+  //             FROM nexdoor.users
+  //             WHERE user_id=nexdoor.tasks.requester_id
+  //           ) reqname
+  //         ) as requester,
+  //         (
+  //           SELECT ROW_TO_JSON(helpname)
+  //           FROM (
+  //             SELECT
+  //               user_id,
+  //               firstname,
+  //               lastname,
+  //               email,
+  //               address_id,
+  //               karma,
+  //               task_count,
+  //               avg_rating,
+  //               profile_picture_url
+  //             FROM nexdoor.users
+  //             WHERE user_id=nexdoor.tasks.helper_id
+  //           ) helpname
+  //         ) AS helper,
+  //         (
+  //           SELECT ROW_TO_JSON(loc)
+  //           FROM (
+  //             SELECT *
+  //             FROM nexdoor.address
+  //             WHERE address_id=nexdoor.tasks.address_id
+  //           ) loc
+  //         ) AS address,
+  //         description,
+  //         car_required,
+  //         physical_labor_required,
+  //         status,
+  //         category,
+  //         start_date,
+  //         end_date,
+  //         start_time,
+  //         duration,
+  //         timestamp_requested
+  //       FROM nexdoor.tasks
+  //       WHERE (
+  //         (
+  //           SELECT coordinate
+  //           FROM nexdoor.address
+  //           WHERE address_id=nexdoor.tasks.address_id
+  //         )
+  //         <@>
+  //         (${coordinate})
+  //       ) < ${range}
+  //       ORDER BY
+  //         start_date,
+  //         start_time
+  //       LIMIT 100;
+  //     ;`;
+  //     db.query(queryStr)
+  //       .then((data) => {
+  //         res.status(200).send(data.rows);
+  //       })
+  //       .catch((err) => {
+  //         res.status(400).send(err.stack);
+  //       });
+  //   };
 
-    getCoordinates(addressQuery)
-      .then((testCoord) => {
-        coordinate = `point(${testCoord.lng},${testCoord.lat})`;
-      })
-      .then(() => {
-        queryDb();
-      })
-      .catch((err) => {
-        res.status(400).send('Error getting coordinates', err.stack);
-      });
-  },
+  //   getCoordinates(addressQuery)
+  //     .then((testCoord) => {
+  //       coordinate = `point(${testCoord.lng},${testCoord.lat})`;
+  //     })
+  //     .then(() => {
+  //       queryDb();
+  //     })
+  //     .catch((err) => {
+  //       res.status(400).send('Error getting coordinates', err.stack);
+  //     });
+  // },
   // *************************************************************
 
-  // *************************************************************
-  // GET REQUESTED TASKS BY USER ID
-  // *************************************************************
-  // Needs from Front End - userId
-  // Returns - array of task objects where given user is the requester, ordered by date/time
-  // *************************************************************
-  /*
-    GET /api/tasks/req/:userID
-    req.body = none
-    res =
-      [
-        {
-          {
-            "task_id": 10,
-            "requester": {
-              "user_id": 16,
-              "firstname": "Franklin",
-              "lastname": "Doogan",
-              "email": "fdoog@gmail.com",
-              "address_id": 41,
-              "karma": 5,
-              "task_count": 15,
-              "avg_rating": 4,
-              "profile_picture_url": "https://www.indiewire.com/wp-content/uploads/2017/06/0000246240.jpg"
-          },
-          "helper": null,
-          "location": {
-              "address_id": 41,
-              "street_address": "8906 Dorrington Ave",
-              "city": "Los Angeles",
-              "state": "CA",
-              "zipcode": 90048,
-              "neighborhood": "West Hollywood",
-              "coordinate": "(-118.386511,34.079391)"
-          },
-          "description": "Help me with my tiny cats",
-          "car_required": null,
-          "physical_labor_required": null,
-          "status": "open",
-          "category": "sitting",
-          "start_date": "2021-06-21T07:00:00.000Z",
-          "end_date": "2021-06-23T07:00:00.000Z",
-          "start_time": "04:20:00",
-          "duration": 4,
-          "timestamp_requested": "2021-07-14T09:28:58.050Z"
-          },
-        },
-        .....
-      ]
-  */
-  // *************************************************************
-  getReqTasksByUser: (req, res) => {
-    const { userId } = req.params;
+  getReqTasksByUser: async (userId) => {
     const queryStr = `
       SELECT
         task_id,
@@ -842,13 +724,16 @@ const taskModels = {
         start_time
     ;`;
 
-    db.query(queryStr)
-      .then((data) => {
-        res.status(200).send(data.rows);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+    const data = await db.query(queryStr);
+    const tasks = data.rows;
+    return tasks;
+    // db.query(queryStr)
+    //   .then((data) => {
+    //     res.status(200).send(data.rows);
+    //   })
+    //   .catch((err) => {
+    //     res.status(400).send(err.stack);
+    //   });
   },
   // *************************************************************
 
