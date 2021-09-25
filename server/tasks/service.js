@@ -727,77 +727,9 @@ const taskModels = {
     const data = await db.query(queryStr);
     const tasks = data.rows;
     return tasks;
-    // db.query(queryStr)
-    //   .then((data) => {
-    //     res.status(200).send(data.rows);
-    //   })
-    //   .catch((err) => {
-    //     res.status(400).send(err.stack);
-    //   });
   },
-  // *************************************************************
 
-  // *************************************************************
-  // GET HELP TASKS BY USER
-  // *************************************************************
-  // Needs from Front End - userId
-  // Returns - array of task objects where the given user is assigned to be a helper, ordered by date/time
-  // *************************************************************
-  /*
-    GET /api/tasks/help/:userId
-    req.body = none
-    res =
-      [
-        {
-          "task_id": 17,
-          "requester": {
-              "user_id": 16,
-              "firstname": "Franklin",
-              "lastname": "Doogan",
-              "email": "fdoog@gmail.com",
-              "address_id": 41,
-              "karma": 5,
-              "task_count": 15,
-              "avg_rating": 4,
-              "profile_picture_url": "https://www.indiewire.com/wp-content/uploads/2017/06/0000246240.jpg"
-          },
-          "helper": {
-              "user_id": 17,
-              "firstname": "Jenny",
-              "lastname": "Cho",
-              "email": "questionmaster3000@gmail.com",
-              "address_id": 42,
-              "karma": 64,
-              "task_count": 28,
-              "avg_rating": 5,
-              "profile_picture_url": "https://media-exp1.licdn.com/dms/image/C5603AQEVw__BKGBOdw/profile-displayphoto-shrink_200_200/0/1551395086203?e=1631750400&v=beta&t=yMuQBb8y5FTMWUZfBUKUFvACe8Mbv5z_8aaCAQxaSH0"
-          },
-          "location": {
-              "address_id": 48,
-              "street_address": "85 Bronson",
-              "city": "Los Angeles",
-              "state": "CA",
-              "zipcode": 90027,
-              "neighborhood": "Glendale",
-              "coordinate": null
-          },
-          "description": "help me with my 17 turtles",
-          "car_required": false,
-          "physical_labor_required": "true",
-          "status": "active",
-          "category": "favor",
-          "start_date": "2021-04-11T07:00:00.000Z",
-          "end_date": "2021-04-22T07:00:00.000Z",
-          "start_time": "11:00:00",
-          "duration": 3,
-          "timestamp_requested": "2021-07-15T02:57:56.885Z"
-        },
-        ....
-      ]
-  */
-  // *************************************************************
-  getHelpTasksByUser: (req, res) => {
-    const { userId } = req.params;
+  getHelpTasksByUser: async (userId) => {
     const queryStr = `
       SELECT
         task_id,
@@ -859,126 +791,57 @@ const taskModels = {
         start_date,
         start_time
       `;
-    db.query(queryStr)
-      .then((data) => {
-        res.status(200).send(data.rows);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
-  },
-  // *************************************************************
 
-  // *************************************************************
-  // UPDATE TASK HELPER AND STATUS
-  // *************************************************************
-  // Needs from Front End - userId (helper), taskId
-  // Returns - String confirmation
-  // *************************************************************
-  /*
-    PUT /task/help/:taskId/:userId
-    req.body = none
-    res = 'Updated helper, status pending'
-  */
-  // *************************************************************
-  updateHelper: (req, res) => {
-    const { taskId, userId } = req.params;
+    const data = await db.query(queryStr);
+    const tasks = data.rows;
+    return tasks;
+  },
+
+  updateHelper: async (params) => {
+    const { taskId, userId } = params;
     const queryStr = `
       UPDATE nexdoor.tasks
       SET
         helper_id=${userId},
         status='Pending'
       WHERE task_id=${taskId}
+      RETURNING task_id
     `;
-    db.query(queryStr)
-      .then(() => {
-        res.status(200).send('Updated helper, status pending');
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+    const data = await db.query(queryStr);
+    const taskIdRet = data.rows[0];
+    return taskIdRet;
   },
-  // *************************************************************
 
-  // *************************************************************
-  // REMOVE HELPER FROM PENDING TASK
-  // *************************************************************
-  // Needs from Front End - taskId
-  // Return - string confirmation
-  // *************************************************************
-  /*
-    PUT /task/rmhelp/:taskId
-    req.body = none
-    res = 'Removed helper, status open
-  */
-  // *************************************************************
-  removeHelper: (req, res) => {
-    const { taskId } = req.params;
+  removeHelper: async (taskId) => {
     const queryStr = `
       UPDATE nexdoor.tasks
       SET
         helper_id=null,
         status='Open'
       WHERE task_id=${taskId}
+      RETURNING task_id
     ;`;
-    db.query(queryStr)
-      .then(() => {
-        res.status(200).send('Removed helper, status open');
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+    const data = await db.query(queryStr);
+    const taskIdRet = data.rows[0];
+    return taskIdRet;
   },
-  // *************************************************************
 
-  // *************************************************************
-  // CHANGE TASK STATUS TO ACTIVE, COMPLETED
-  // *************************************************************
-  // Needs from Front End - status(active, completed) taskId
-  // Returns - String confirmation
-  // *************************************************************
-  /*
-    PUT /task/change/:status/:taskId
-    req.body = none
-    res = 'Task 17 status set to complete'
-  */
-  // *************************************************************
-  changeTaskStatus: (req, res) => {
-    const { status, taskId } = req.params;
+  changeTaskStatus: async (params) => {
+    const { status, taskId } = params;
     const queryStr = `
       UPDATE nexdoor.tasks
       SET status='${status}'
       WHERE task_id=${taskId}
+      RETURNING task_id
     ;`;
-    db.query(queryStr)
-      .then(() => {
-        res.status(200).send(`Task ${taskId} status set to ${status}`);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+    const data = await db.query(queryStr);
+    const taskIdRet = data.rows[0];
+    return taskIdRet;
   },
-  // *************************************************************
 
-  // *************************************************************
-  // CLOSE TASK (AND INCREMENT HELPER TASK COUNT / RATING)
-  // *************************************************************
-  // Needs from Front End - taskId, helper rating
-  // Returns - String confirmation
-  // Notes - Changes task status to 'Closed', increments helper task count by 1, increments karma by the input rating, calculates and updates new avg rating
-  // *************************************************************
-  /*
-    PUT /task/close/:taskId/:rating
-    req.body =
-      {
-        "review": "Best couch carrying help I have ever received in my life."
-      }
-    res = 'Task 17 closed'
-  */
-  // *************************************************************
-  closeTask: (req, res) => {
-    const { taskId, rating } = req.params;
-    const { review } = req.body;
+  closeTask: async (params, review) => {
+    const { taskId, rating } = params;
+
     const queryStr1 = `
       UPDATE nexdoor.users
         SET
@@ -1026,58 +889,25 @@ const taskModels = {
         )
       )
     ;`;
-    db.query(queryStr1)
-      .then(() => {
-        db.query(queryStr2)
-          .then(() => {
-            db.query(queryStr3)
-              .then(() => {
-                db.query(queryStr4)
-                  .then(() => {
-                    res.status(200).send(`Task ${taskId} closed`);
-                  })
-                  .catch((err) => {
-                    res.status(400).send(err.stack);
-                  });
-              })
-              .catch((err) => {
-                res.status(400).send('err updating task status', err.stack);
-              });
-          })
-          .catch((err) => {
-            res.status(400).send('err updating avg_rating', err.stack);
-          });
-      })
-      .catch((err) => {
-        res.status(400).send('err updating taskcount and karma', err.stack);
-      });
+    try {
+      await db.query(queryStr1);
+      await db.query(queryStr2);
+      await db.query(queryStr3);
+      const data = await db.query(queryStr4);
+      const taskIdRet = data.rows[0];
+      return taskIdRet;
+    } catch (err) {
+      return err;
+    }
   },
 
-  // *************************************************************
-  // DELETE TASK FROM DB
-  // *************************************************************
-  // Needs from Front End - taskId
-  // Returns - String confirmation
-  // *************************************************************
-  /*
-    DELETE /task/:taskId
-    req.body - none
-    res - 'Deleted task 17 from db'
-  */
-  // *************************************************************
-  deleteTask: (req, res) => {
-    const { taskId } = req.params;
+  deleteTask: async (taskId) => {
     const queryStr = `
       DELETE FROM nexdoor.tasks
       WHERE task_id=${taskId}
     ;`;
-    db.query(queryStr)
-      .then(() => {
-        res.status(200).send(`Deleted task ${taskId} from db`);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+    await db.query(queryStr);
+    return `${taskId} deleted`;
   },
 
   // *************************************************************

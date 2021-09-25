@@ -747,76 +747,15 @@ const taskControllers = {
       ]
   */
   // *************************************************************
-  getHelpTasksByUser: (req, res) => {
+  getHelpTasksByUser: async (req, res) => {
     const { userId } = req.params;
-    const queryStr = `
-      SELECT
-        task_id,
-        (
-          SELECT ROW_TO_JSON(reqname)
-          FROM (
-            SELECT
-              user_id,
-              firstname,
-              lastname,
-              email,
-              address_id,
-              karma,
-              task_count,
-              avg_rating,
-              profile_picture_url
-            FROM nexdoor.users
-            WHERE user_id=nexdoor.tasks.requester_id
-          ) reqname
-        ) AS requester,
-        (
-          SELECT ROW_TO_JSON(helpname)
-          FROM (
-            SELECT
-              user_id,
-              firstname,
-              lastname,
-              email,
-              address_id,
-              karma,
-              task_count,
-              avg_rating,
-              profile_picture_url
-            FROM nexdoor.users
-            WHERE user_id=nexdoor.tasks.helper_id
-          ) helpname
-        ) AS helper,
-        (
-          SELECT ROW_TO_JSON(loc)
-          FROM (
-            SELECT *
-            FROM nexdoor.address
-            WHERE address_id=nexdoor.tasks.address_id
-          ) loc
-        ) AS location,
-        description,
-        car_required,
-        physical_labor_required,
-        status,
-        category,
-        start_date,
-        end_date,
-        start_time,
-        duration,
-        timestamp_requested
-      FROM nexdoor.tasks
-      WHERE helper_id=${userId}
-      ORDER BY
-        start_date,
-        start_time
-      `;
-    db.query(queryStr)
-      .then((data) => {
-        res.status(200).send(data.rows);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+
+    try {
+      const tasks = await tasksService.getHelpTasksByUser(userId);
+      res.status(200).send(tasks);
+    } catch (err) {
+      res.status(400).send(err.stack);
+    }
   },
   // *************************************************************
 
@@ -832,22 +771,18 @@ const taskControllers = {
     res = 'Updated helper, status pending'
   */
   // *************************************************************
-  updateHelper: (req, res) => {
-    const { taskId, userId } = req.params;
-    const queryStr = `
-      UPDATE nexdoor.tasks
-      SET
-        helper_id=${userId},
-        status='Pending'
-      WHERE task_id=${taskId}
-    `;
-    db.query(queryStr)
-      .then(() => {
-        res.status(200).send('Updated helper, status pending');
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+  updateHelper: async (req, res) => {
+    const params = {
+      taskId: req.params.taskId,
+      userId: req.params.userId,
+    };
+
+    try {
+      const confirmation = await tasksService.updateHelper(params);
+      res.status(200).send(confirmation);
+    } catch (err) {
+      res.status(400).send(err.stack);
+    }
   },
   // *************************************************************
 
@@ -863,22 +798,15 @@ const taskControllers = {
     res = 'Removed helper, status open
   */
   // *************************************************************
-  removeHelper: (req, res) => {
+  removeHelper: async (req, res) => {
     const { taskId } = req.params;
-    const queryStr = `
-      UPDATE nexdoor.tasks
-      SET
-        helper_id=null,
-        status='Open'
-      WHERE task_id=${taskId}
-    ;`;
-    db.query(queryStr)
-      .then(() => {
-        res.status(200).send('Removed helper, status open');
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+
+    try {
+      const confId = await tasksService.removeHelper(taskId);
+      res.status(200).send(confId);
+    } catch (err) {
+      res.status(400).send(err.stack);
+    }
   },
   // *************************************************************
 
@@ -894,20 +822,18 @@ const taskControllers = {
     res = 'Task 17 status set to complete'
   */
   // *************************************************************
-  changeTaskStatus: (req, res) => {
-    const { status, taskId } = req.params;
-    const queryStr = `
-      UPDATE nexdoor.tasks
-      SET status='${status}'
-      WHERE task_id=${taskId}
-    ;`;
-    db.query(queryStr)
-      .then(() => {
-        res.status(200).send(`Task ${taskId} status set to ${status}`);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+  changeTaskStatus: async (req, res) => {
+    const params = {
+      status: req.params.status,
+      taskId: req.params.taskId,
+    };
+
+    try {
+      const confId = await tasksService.changeTaskStatus(params);
+      res.status(200).send(confId);
+    } catch (err) {
+      res.status(400).send(err.stack);
+    }
   },
   // *************************************************************
 
@@ -927,81 +853,20 @@ const taskControllers = {
     res = 'Task 17 closed'
   */
   // *************************************************************
-  closeTask: (req, res) => {
-    const { taskId, rating } = req.params;
+  closeTask: async (req, res) => {
+    // const { taskId, rating } = req.params;
+    const params = {
+      taskId: req.params.taskId,
+      rating: req.params.rating,
+    };
     const { review } = req.body;
-    const queryStr1 = `
-      UPDATE nexdoor.users
-        SET
-          task_count=task_count + 1,
-          karma=karma + ${rating}
-        WHERE user_id=(
-          SELECT helper_id
-          FROM nexdoor.tasks
-          WHERE task_id=${taskId}
-        )
-    ;`;
-    const queryStr2 = `
-      UPDATE nexdoor.users
-      SET avg_rating=karma / task_count
-      WHERE user_id=(
-        SELECT helper_id
-        FROM nexdoor.tasks
-        WHERE task_id=${taskId}
-      )
-    ;`;
-    const queryStr3 = `
-      UPDATE nexdoor.tasks
-      SET status='Closed'
-      WHERE task_id=${taskId}
-    ;`;
-    const queryStr4 = `
-      INSERT INTO nexdoor.reviews (
-        rating,
-        review,
-        requester_id,
-        helper_id
-      )
-      VALUES (
-        ${rating},
-        '${review}',
-        (
-          SELECT requester_id
-          FROM nexdoor.tasks
-          WHERE task_id=${taskId}
-        ),
-        (
-          SELECT helper_id
-          FROM nexdoor.tasks
-          WHERE task_id=${taskId}
-        )
-      )
-    ;`;
-    db.query(queryStr1)
-      .then(() => {
-        db.query(queryStr2)
-          .then(() => {
-            db.query(queryStr3)
-              .then(() => {
-                db.query(queryStr4)
-                  .then(() => {
-                    res.status(200).send(`Task ${taskId} closed`);
-                  })
-                  .catch((err) => {
-                    res.status(400).send(err.stack);
-                  });
-              })
-              .catch((err) => {
-                res.status(400).send('err updating task status', err.stack);
-              });
-          })
-          .catch((err) => {
-            res.status(400).send('err updating avg_rating', err.stack);
-          });
-      })
-      .catch((err) => {
-        res.status(400).send('err updating taskcount and karma', err.stack);
-      });
+
+    try {
+      const confId = await tasksService.closeTask(params, review);
+      res.status(200).send(confId);
+    } catch (err) {
+      res.status(400).send(err.stack);
+    }
   },
 
   // *************************************************************
@@ -1016,19 +881,15 @@ const taskControllers = {
     res - 'Deleted task 17 from db'
   */
   // *************************************************************
-  deleteTask: (req, res) => {
+  deleteTask: async (req, res) => {
     const { taskId } = req.params;
-    const queryStr = `
-      DELETE FROM nexdoor.tasks
-      WHERE task_id=${taskId}
-    ;`;
-    db.query(queryStr)
-      .then(() => {
-        res.status(200).send(`Deleted task ${taskId} from db`);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+
+    try {
+      const confirmation = await tasksService.deleteTask(taskId);
+      res.status(200).send(confirmation);
+    } catch (err) {
+      res.status(400).send(err.stack);
+    }
   },
 
   // *************************************************************
