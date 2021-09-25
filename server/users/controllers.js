@@ -1,19 +1,12 @@
+/* eslint-disable camelcase */
 /* eslint-disable spaced-comment */
 /* eslint-disable max-len */
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 const session = require('express-session');
-const db = require('../../db/index');
-const getCoordinates = require('./coordinates');
+const getCoordinates = require('../tasks/coordinates');
+const usersService = require('./service');
 
-/*________________________________________________________________
-TABLE OF CONTENTS
-- Add a new user: 15 - 122
-- Get user info object: 124 - 186
-- Get list of users ordered by highest rating: 188 - 231
-- Check if email already exists in db: 233 - 268
-- Get a users email and password: 270 - 298
-________________________________________________________________*/
 const userControllers = {
   // *************************************************************
   // ADD A NEW USER
@@ -39,92 +32,41 @@ const userControllers = {
       }
     res = "User added to db"
   */
-  addUser: (req, res) => {
+  addUser: async (req, res) => {
     const {
       streetAddress,
       city,
       state,
       zipcode,
-      firstName,
-      lastName,
       password,
-      email,
     } = req.body;
+
     const hashPass = bcrypt.hashSync(password, 10);
 
-    const { imgUrl, neighborhood } = req.body || null;
-
     const addressQuery = `${streetAddress}+${city}+${state}+${zipcode}`;
-    let coordinate;
+    const coordinateOrig = await getCoordinates(addressQuery);
+    const coordinate = `point(${coordinateOrig.lng},${coordinateOrig.lat})`;
 
-    const queryDb = () => {
-      const queryStr = `
-        WITH X AS (
-          INSERT INTO nexdoor.address (
-            street_address,
-            city,
-            state,
-            zipcode,
-            neighborhood,
-            coordinate
-          )
-          VALUES (
-            '${streetAddress}',
-            '${city}',
-            '${state}',
-            ${zipcode},
-            '${neighborhood}',
-            ${coordinate}
-          )
-          RETURNING address_id
-        )
-        INSERT INTO nexdoor.users (
-          firstname,
-          lastname,
-          password,
-          email,
-          address_id,
-          karma,
-          task_count,
-          avg_rating,
-          profile_picture_url,
-          acct_created_timestamp
-        )
-        SELECT
-          '${firstName}',
-          '${lastName}',
-          '${hashPass}',
-          '${email}',
-          address_id,
-          0,
-          0,
-          null,
-          '${imgUrl}',
-          (SELECT CURRENT_TIMESTAMP)
-        FROM X
-        RETURNING
-          user_id, firstname, lastname, email, address_id, karma, task_count, avg_rating, profile_picture_url
-      `;
-
-      db.query(queryStr)
-        .then((data) => {
-          res.status(200).send(data.rows[0]);
-        })
-        .catch((err) => {
-          res.status(400).send(err.stack);
-        });
+    const body = {
+      streetAddress,
+      city,
+      state,
+      zipcode,
+      coordinate,
+      neighborhood: req.body.neighborhood || null,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      hashPass,
+      email: req.body.email,
+      imgUrl: req.body.imgUrl || null,
     };
 
-    getCoordinates(addressQuery)
-      .then((testCoord) => {
-        coordinate = `point(${testCoord.lng},${testCoord.lat})`;
-      })
-      .then(() => {
-        queryDb();
-      })
-      .catch((err) => {
-        res.status(400).send('Error getting coordinates', err.stack);
-      });
+    try {
+      const userObj = await usersService.addUser(body);
+      res.status(200).send(userObj);
+    } catch (err) {
+      res.status(400).send(err.stack);
+    }
   },
   // *************************************************************
 
@@ -154,42 +96,15 @@ const userControllers = {
       }
   */
   // *************************************************************
-  getUser: (req, res) => {
+  getUser: async (req, res) => {
     const { userId } = req.params;
 
-    const queryStr = `
-      SELECT
-        user_id,
-        firstname,
-        lastname,
-        email,
-        karma,
-        task_count,
-        avg_rating,
-        profile_picture_url, (
-          SELECT ROW_TO_JSON(add)
-          FROM (
-            SELECT
-              street_address,
-              city,
-              state,
-              zipcode,
-              neighborhood
-            FROM nexdoor.address
-            WHERE address_id=nexdoor.users.address_id
-          ) add
-        ) as address
-      FROM nexdoor.users
-      WHERE user_id=${userId};
-    `;
-
-    db.query(queryStr)
-      .then((data) => {
-        res.status(200).send(data.rows[0]);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+    try {
+      const user = await usersService.getUser(userId);
+      res.status(200).send(user);
+    } catch (err) {
+      res.status(400).send(err.stack);
+    }
   },
   // *************************************************************
 
@@ -228,37 +143,15 @@ const userControllers = {
       ]
   */
   // *************************************************************
-  getUsersByRating: (req, res) => {
+  getUsersByRating: async (req, res) => {
     const { quantity } = req.params || 25;
-    const queryStr = `
-      SELECT
-        user_id,
-        firstname,
-        lastname,
-        address_id,
-        karma,
-        task_count,
-        avg_rating,
-        profile_picture_url,
-        (
-          SELECT ARRAY_TO_JSON(ARRAY_AGG(reviews))
-          FROM (
-            SELECT *
-            FROM nexdoor.reviews
-            WHERE helper_id=nexdoor.users.user_id
-          ) reviews
-        ) as reviews
-      FROM nexdoor.users
-      ORDER BY avg_rating
-      LIMIT ${quantity}
-    `;
-    db.query(queryStr)
-      .then((data) => {
-        res.status(200).send(data.rows);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+
+    try {
+      const users = await usersService.getUsersByRating(quantity);
+      res.status(200).send(users);
+    } catch (err) {
+      res.status(400).send(err.stack);
+    }
   },
   // *************************************************************
 
@@ -297,61 +190,21 @@ const userControllers = {
         ]
   */
   // *************************************************************
-  getUsersInRangeByRating: (req, res) => {
-    const { userId } = req.params;
-    const { range } = req.params || 1;
-    const { quantity } = req.params || 25;
-    const queryStr = `
-      SELECT
-        user_id,
-        firstname,
-        lastname,
-        address_id,
-        karma,
-        task_count,
-        avg_rating,
-        profile_picture_url,
-        (
-          SELECT ARRAY_TO_JSON(ARRAY_AGG(reviews))
-          FROM (
-            SELECT *
-            FROM nexdoor.reviews
-            WHERE helper_id=nexdoor.users.user_id
-          ) reviews
-        ) as reviews
-      FROM nexdoor.users
-      WHERE
-        (
-          (
-            SELECT coordinate
-            FROM nexdoor.address
-            WHERE address_id=
-            (
-              SELECT address_id
-              FROM nexdoor.users
-              WHERE user_id=${userId}
-            )
-          )
-          <@>
-          (
-            SELECT coordinate
-            FROM nexdoor.address
-            WHERE address_id=nexdoor.users.address_id
-          ) < ${range}
-        )
-      ORDER BY avg_rating
-      LIMIT ${quantity}
-    `;
-    db.query(queryStr)
-      .then((data) => {
-        res.status(200).send(data.rows);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+  getUsersInRangeByRating: async (req, res) => {
+    const params = {
+      userId: req.params.userId,
+      range: req.params.range || 1,
+      quantity: req.params.quantity || 25,
+    };
+
+    try {
+      const users = await usersService.getUsersInRangeByRating(params);
+      res.status(200).send(users);
+    } catch (err) {
+      res.status(400).send(err.stack);
+    }
   },
   // *************************************************************
-
 
   // *************************************************************
   // CHECK FOR EMAIL IN DB
@@ -371,22 +224,15 @@ const userControllers = {
     res = false
   */
   // *************************************************************
-  checkForEmail: (req, res) => {
+  checkForEmail: async (req, res) => {
     const { email } = req.body;
-    const queryStr = `
-      SELECT EXISTS (
-        SELECT true FROM nexdoor.users
-        WHERE email='${email}'
-        LIMIT 1
-      )
-    `;
-    db.query(queryStr)
-      .then((data) => {
-        res.status(200).send(data.rows[0].exists);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+
+    try {
+      const result = await usersService.checkForEmail(email);
+      res.status(200).send(result);
+    } catch (err) {
+      res.status(400).send(err.stack);
+    }
   },
   // *************************************************************
 
@@ -403,20 +249,15 @@ const userControllers = {
       }
   */
   // *************************************************************
-  getUserCredentials: (req, res) => {
+  getUserCredentials: async (req, res) => {
     const { userId } = req.params;
-    const queryStr = `
-      SELECT email, password
-      FROM nexdoor.users
-      WHERE user_id=${userId}
-    ;`;
-    db.query(queryStr)
-      .then((data) => {
-        res.status(200).send(data.rows[0]);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+
+    try {
+      const credentials = await usersService.getUserCredentials(userId);
+      res.status(200).send(credentials);
+    } catch (err) {
+      res.status(400).send(err.stack);
+    }
   },
   // *************************************************************
 
@@ -438,47 +279,35 @@ const userControllers = {
       }
   */
   // *************************************************************
-  authenticateLogin: (req, res, next) => {
-    const { email, password } = req.body;
-    const queryStr = `
-      SELECT user_id, password
-      FROM nexdoor.users
-      WHERE email='${email}'
-    ;`;
-    db.query(queryStr)
-      .then((data) => {
-        const user_id = data.rows[0].user_id;
-        //compare passwords
-        if (!bcrypt.compareSync(password, data.rows[0].password)) {
-          res.status(404).send('error: password does not match');
-        } else {
-          //return session
-          req.session.user_id = user_id;
-          req.session.save();
-          // res.session.user_Id = user_id;
-          res.status(200).send({user_id});
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        req.session.destroy();
-        res.status(400).send(err.stack);
-      });
-  },
-  // *************************************************************
-  authenticateSession: (req, res) => {
-    if(req.session.user_id) {
-      const user_id = req.session.user_id;
-      res.status(200).send({ user_id });
-    } else {
-      res.status(418).send("error: user is a teapot");
+  authenticateLogin: async (req, res) => {
+    const body = {
+      email: req.body.email,
+      password: req.body.password,
+    };
+
+    try {
+      const { userId, match } = await usersService.authenticateLogin(body);
+      if (!match) {
+        res.status(404).send('Password does not match');
+      } else {
+        req.session.user_id = userId;
+        req.session.save();
+        res.status(200).send({ userId });
+      }
+    } catch (err) {
+      req.session.destroy();
+      res.status(400).send(err.stack);
     }
   },
-
+  // *************************************************************
+  authenticateSession: async (req, res) => {
+    if (req.session.user_id) {
+      const { user_id } = req.session;
+      res.status(200).send({ user_id });
+    } else {
+      res.status(418).send('error: user is a teapot');
+    }
+  },
 };
 
 module.exports = userControllers;
-
-// user_id fk field
-// date with timezone - expiry
-// only query for dates that have not already passed

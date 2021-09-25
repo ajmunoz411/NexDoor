@@ -1,5 +1,6 @@
+/* eslint-disable max-len */
 /* eslint-disable spaced-comment */
-const db = require('../../db/index');
+const announcementsService = require('./service');
 
 /*________________________________________________________________
 TABLE OF CONTENTS
@@ -20,10 +21,12 @@ const announcementControllers = {
       "date": "10/17/2020",
       "time": "05:25"
     }
-    res = 'Added announcement to db'
+    res = '{
+      "announcement_id": 11
+    }'
   */
   // *************************************************************
-  addAnnouncement: (req, res) => {
+  addAnnouncement: async (req, res) => {
     const { userId } = req.params || null;
     const {
       announcementBody,
@@ -31,33 +34,17 @@ const announcementControllers = {
       time,
     } = req.body;
 
-    const queryStr = `
-      INSERT INTO nexdoor.announcements (
-        user_id,
-        announcement_body,
-        date,
-        time
-      )
-      VALUES (
-        ${userId},
-        '${announcementBody}',
-        '${date}',
-        '${time}'
-      )
-    `;
-
-    db.query(queryStr)
-      .then(() => {
-        res.status(200).send('Added announcement to db');
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+    try {
+      const insertId = await announcementsService.addAnnouncement(userId, announcementBody, date, time);
+      res.status(200).send(insertId);
+    } catch (err) {
+      res.status(400).send(err.stack);
+    }
   },
   // *************************************************************
 
   // *************************************************************
-  // ADD ANNOUNCEMENT
+  // GET ANNOUNCEMENTS
   // *************************************************************
   /*
     GET /api/announce/:quantity
@@ -75,20 +62,15 @@ const announcementControllers = {
       ]
   */
   // *************************************************************
-  getAnnouncements: (req, res) => {
+  getAnnouncements: async (req, res) => {
     const { quantity } = req.params || 25;
-    const queryStr = `
-      SELECT *
-      FROM nexdoor.announcements
-      LIMIT ${quantity}
-    ;`;
-    db.query(queryStr)
-      .then((data) => {
-        res.status(200).send(data.rows);
-      })
-      .catch((err) => {
-        res.status(400).send(err.stack);
-      });
+
+    try {
+      const announcements = await announcementsService.getAnnouncements(quantity);
+      res.status(200).send(announcements);
+    } catch (err) {
+      res.status(400).send(err.stack);
+    }
   },
   // *************************************************************
 };

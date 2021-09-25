@@ -6,15 +6,8 @@ const pool = new Pool({
   host: process.env.DB_HOST,
   database: process.env.DB_DB,
   password: process.env.DB_PASS,
+  allowExitOnIdle: true,
   port: 5432,
-});
-
-pool.connect((err) => {
-  if (err) {
-    console.log('err connecting to psql', err.stack);
-  } else {
-    console.log('connected to psql db');
-  }
 });
 
 module.exports = {

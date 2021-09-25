@@ -68,7 +68,7 @@ const LogIn = () => {
   };
 
   const getUserData = (userId) => {
-    axios.get(`http://localhost:3500/api/user/info/${userId}`)
+    axios.get(`http://localhost:3500/api/users/info/${userId}`)
       .then((response) => {
         dispatch({ type: 'SET_USER', userData: response.data });
       })
@@ -84,8 +84,9 @@ const LogIn = () => {
       withCredentials: true,
     })
       .then((response) => {
+        console.log('response', response.data.rows);
         if (response.status === 200) {
-          getUserData(Number(response.data.user_id));
+          getUserData(Number(response.data.rows.user_id));
           // redirect to home page
         } else {
           console.log('error logging in');

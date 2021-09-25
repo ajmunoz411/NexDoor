@@ -62,7 +62,7 @@ const SignUp = () => {
     setInfo({
       ...info,
       [e.target.name]: e.target.value,
-    }, console.log(e.target.value));
+    });
   };
 
   const handleLogIn = () => {
@@ -92,7 +92,7 @@ const SignUp = () => {
       password: info.password,
       confirm_password: info.confirm_password,
     };
-    axios.get('http://localhost:3500/api/email')
+    axios.get('http://localhost:3500/api/users/email')
       .then((response) => {
         if (response.data === true) {
           throw Error('email already exists!');
