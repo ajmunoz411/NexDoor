@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Container, Grid, Avatar } from '@material-ui/core';
+import React from 'react';
+import { Grid, Avatar } from '@material-ui/core';
 import { Button } from 'react-bootstrap';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
@@ -8,7 +8,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import StarIcon from '@material-ui/icons/Star';
 import styled from 'styled-components';
 import ActiveModal from './ActiveModal';
-
 
 const YouAreHelpingContainer = styled.div`
 width: 250px;
@@ -61,7 +60,6 @@ const YourHelper = () => {
       .catch((err) => { console.error(err); });
   };
 
-  // margin-left: 83px;
   return (
     <YouAreHelpingContainer>
       <p style={{ display: 'flex', justifyContent: 'center' }}>Your helper</p>
@@ -78,13 +76,13 @@ const YourHelper = () => {
         <span>
           {selectTask.helper.task_count > 0 ? (
             <span>
-              <StarIcon style={{ fill: "red" }} />
+              <StarIcon style={{ fill: 'red' }} />
               {selectTask.helper.avg_rating}
               &nbsp;
               ({selectTask.helper.task_count})
             </span>
           ) : (
-            <StarIcon style={{ fill: "red" }} />
+            <StarIcon style={{ fill: 'red' }} />
           )}
         </span>
         &nbsp;&nbsp;&nbsp;&nbsp;
