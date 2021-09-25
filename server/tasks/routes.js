@@ -11,7 +11,6 @@ tasks
   .get('/req/:userId', taskCtrl.getReqTasksByUser)
   .get('/help/:userId', taskCtrl.getHelpTasksByUser)
   .get('/range/:userId/:range', taskCtrl.getTasksInRange)
-  // .get('/alt/:range', taskCtrl.getTasksInRangeAltAddress)
 
   .put('/help/:taskId/:userId', taskCtrl.updateHelper)
   .put('/rmhelp/:taskId', taskCtrl.removeHelper)
@@ -19,7 +18,6 @@ tasks
   .put('/close/:taskId/:rating', taskCtrl.closeTask)
   .put('/edit', taskCtrl.editTask)
 
-  // .post('/check/:userId', taskCtrl.addTaskCheckAddress)
   .post('/new/:userId', taskCtrl.addTaskNewAddress)
   .post('/home/:userId', taskCtrl.addTaskHomeAddress)
 
