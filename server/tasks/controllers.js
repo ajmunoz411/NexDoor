@@ -1,21 +1,8 @@
 /* eslint-disable spaced-comment */
 /* eslint-disable max-len */
-const db = require('../../db/index');
 const getCoordinates = require('./coordinates');
 const tasksService = require('./service');
-/*________________________________________________________________
-TABLE OF CONTENTS
-- Add a task with a new address (not user's home): 19 - 135
-- Add a task with a home address: 137 - 214
-- Add a task after checking if the address already exists in db: 216 - 397
-- Get x # of tasks ordered by date/time: 399 - 526
-- Get tasks in mileage range from user's home address: 528 - 680
-- Get requester tasks for a user: 682 - 805
-- Get helper tasks for a user: 807 - 937
-- Update helper on a task (and change status to pending): 939 - 968
-- Remove helper from a task (and change status to open): 970 - 999
-- Update a task status to active, completed, or closed: 1001 - 1028
-________________________________________________________________*/
+
 const taskControllers = {
 // *************************************************************
   // ADD TASK WITH NEW ADDRESS (i.e not the user's home address)
@@ -77,7 +64,7 @@ const taskControllers = {
       const insertId = await tasksService.addTaskNewAddress(userId, body);
       res.status(200).send(insertId);
     } catch (err) {
-      console.log('err adding task', err.stack);
+      res.status(400).send(err.stack);
     }
   },
   // *************************************************************
@@ -120,187 +107,9 @@ const taskControllers = {
       const insertId = await tasksService.addTaskHomeAddress(userId, body);
       res.status(200).send(insertId);
     } catch (err) {
-      console.log('err adding task', err.stack);
+      res.status(400).send(err.stack);
     }
   },
-  // *************************************************************
-
-  // *************************************************************
-  // ADD TASK AFTER CHECKING FOR EXISTING ADDRESS
-  // *************************************************************
-  //  Needs from Front End - requester user id, street address, city, state, zipcode, neighborhood (optional), description, car required (optional), labor required(optional), category, start date, end date, start time, duration
-  //  Returns - Confirmation string (new address if address wasn't already in the db, old address if it was)
-  // *************************************************************
-  /*
-    POST /api/task/check/:userID (requester)
-    req.body =
-    {
-      "streetAddress": "85 Bronson",
-      "city": "Los Angeles",
-      "state": "CA",
-      "zipcode": 90027,
-      "neighborhood": "Glendale",
-      "description": "help me with my 17 turtles",
-      "carRequired": false,
-      "laborRequired": true,
-      "category": "favor",
-      "startDate": "04/11/2021",
-      "endDate": "04/22/2021",
-      "startTime": "11:00",
-      "duration": 3
-    }
-    res = 'Added task with new address to db'
-  */
-  // *************************************************************
-
-  // addTaskCheckAddress: (req, res) => {
-  //   const { userId } = req.params;
-  //   const {
-  //     streetAddress,
-  //     city,
-  //     state,
-  //     zipcode,
-  //     neighborhood,
-  //     description,
-  //     carRequired,
-  //     laborRequired,
-  //     category,
-  //     startDate,
-  //     endDate,
-  //     startTime,
-  //     duration,
-  //   } = req.body;
-
-  //   const addressQuery = `${streetAddress}+${city}+${state}+${zipcode}`;
-  //   let coordinate;
-
-  //   const queryStr1 = `
-  //     SELECT address_id
-  //     FROM nexdoor.address
-  //     WHERE street_address='${streetAddress}'
-  //     AND zipcode=${zipcode}
-  //   `;
-
-  //   const queryDb = () => {
-  //     const queryStr3 = `
-  //       WITH X AS (
-  //         INSERT INTO nexdoor.address
-  //         (
-  //           street_address,
-  //           city,
-  //           state,
-  //           zipcode,
-  //           neighborhood,
-  //           coordinate
-  //         )
-  //         VALUES
-  //         (
-  //           '${streetAddress}',
-  //           '${city}',
-  //           '${state}',
-  //           ${zipcode},
-  //           '${neighborhood}',
-  //           ${coordinate}
-  //         )
-  //       RETURNING address_id
-  //     )
-  //     INSERT INTO nexdoor.tasks (
-  //       requester_id,
-  //       address_id,
-  //       description,
-  //       car_required,
-  //       physical_labor_required,
-  //       status,
-  //       category,
-  //       start_date,
-  //       end_date,
-  //       start_time,
-  //       duration,
-  //       timestamp_requested
-  //     )
-  //     SELECT
-  //       ${userId},
-  //       address_id,
-  //       '${description}',
-  //       ${carRequired},
-  //       ${laborRequired},
-  //       'Open',
-  //       '${category}',
-  //       '${startDate}',
-  //       '${endDate}',
-  //       '${startTime}',
-  //       ${duration},
-  //       (SELECT CURRENT_TIMESTAMP)
-  //     FROM X;
-  //   `;
-
-  //     db.query(queryStr3)
-  //       .then(() => {
-  //         res.send('Added task with new address to db');
-  //       })
-  //       .catch((err) => {
-  //         res.status(400).send(err.stack);
-  //       });
-  //   };
-
-  //   db.query(queryStr1)
-  //     .then((address) => {
-  //       if (address.rows.length > 0) {
-  //         const addressId = address.rows[0].address_id;
-  //         const queryStr2 = `
-  //         INSERT INTO nexdoor.tasks (
-  //           requester_id,
-  //           address_id,
-  //           description,
-  //           car_required,
-  //           physical_labor_required,
-  //           status,
-  //           category,
-  //           start_date,
-  //           end_date,
-  //           start_time,
-  //           duration,
-  //           timestamp_requested
-  //         )
-  //         VALUES (
-  //           ${userId},
-  //           ${addressId},
-  //           '${description}',
-  //           ${carRequired},
-  //           ${laborRequired},
-  //           'Open',
-  //           '${category}',
-  //           '${startDate}',
-  //           '${endDate}',
-  //           '${startTime}',
-  //           ${duration},
-  //           (SELECT CURRENT_TIMESTAMP)
-  //         )
-  //       `;
-  //         db.query(queryStr2)
-  //           .then(() => {
-  //             res.status(200).send('Added task with old address to db');
-  //           })
-  //           .catch((err) => {
-  //             res.status(400).send(err.stack);
-  //           });
-  //       } else {
-  //         getCoordinates(addressQuery)
-  //           .then((testCoord) => {
-  //             coordinate = `point(${testCoord.lng},${testCoord.lat})`;
-  //           })
-  //           .then(() => {
-  //             queryDb();
-  //           })
-  //           .catch((err) => {
-  //             res.status(400).send('Error getting coordinates', err.stack);
-  //           });
-  //       }
-  //     })
-  //     .catch((err) => {
-  //       res.status(400).send('error', err.stack);
-  //     });
-  // },
   // *************************************************************
 
   // *************************************************************
@@ -370,7 +179,6 @@ const taskControllers = {
       const tasks = await tasksService.getTasks(params);
       res.status(200).send(tasks);
     } catch (err) {
-      // console.log('err adding task', err.stack);
       res.status(400).send(err.stack);
     }
   },
@@ -438,7 +246,6 @@ const taskControllers = {
   */
   // *************************************************************
   getTasksInRange: async (req, res) => {
-    // const { userId, range } = req.params;
     const params = {
       userId: req.params.userId,
       range: req.params.range,
@@ -448,180 +255,9 @@ const taskControllers = {
       const tasks = await tasksService.getTasksInRange(params);
       res.status(200).send(tasks);
     } catch (err) {
-      console.log('err getting tasks in range', err.stack);
+      res.status(400).send(err.stack);
     }
   },
-  // *************************************************************
-
-  // *************************************************************
-  // GET TASKS IN RANGE FOR INPUT ADDRESS
-  // *************************************************************
-  // Needs from Front End - userId, range (in miles), street address, city, state, zipcode, neighborhood (optional)
-  // Return - array of tasks objects
-  // Note - does not create a new entry in the address table for the input address
-  // *************************************************************
-  /*
-    GET /api/tasks/alt/:range
-    req.body =
-      {
-        "streetAddress": "1154 Glendale Blvd",
-        "city": "Los Angeles",
-        "state": "CA",
-        "zipcode": 90026,
-        "neighborhood": "Echo Park"
-      }
-    res =
-      [
-        {
-          "task_id": 40,
-          "requester": {
-              "user_id": 43,
-              "firstname": "Adam",
-              "lastname": "Croggins",
-              "email": "acroggins@gmail.com",
-              "address_id": 78,
-              "karma": 0,
-              "task_count": 0,
-              "avg_rating": null,
-              "profile_picture_url": "https://yt3.ggpht.com/ytc/AKedOLS9pqgIqwr8DKFtTl2FrNxCOAa7z7pjvWcAL7Jupw=s900-c-k-c0x00ffffff-no-rj"
-          },
-          "helper": {
-              "user_id": 41,
-              "firstname": "Cheryl",
-              "lastname": "Monstera",
-              "email": "cmonst@gmail.com",
-              "address_id": 76,
-              "karma": 0,
-              "task_count": 0,
-              "avg_rating": null,
-              "profile_picture_url": "https://upload.wikimedia.org/wikipedia/commons/0/01/Cheryl_Cole_Cannes_2014.jpg"
-          },
-          "address": {
-              "address_id": 78,
-              "street_address": "1822 Sunset Blvd",
-              "city": "Los Angeles",
-              "state": "CA",
-              "zipcode": 90026,
-              "neighborhood": "Echo Park",
-              "coordinate": "(-118.260108,34.0777287)"
-          },
-          "description": "Looking to trade an old set of golf clubs for an equally prized heirloom",
-          "car_required": true,
-          "physical_labor_required": "false",
-          "status": "Pending",
-          "category": "Favor",
-          "start_date": "2021-02-01T08:00:00.000Z",
-          "end_date": "2021-02-01T08:00:00.000Z",
-          "start_time": "11:00:00",
-          "duration": 1,
-          "timestamp_requested": "2021-07-15T09:42:29.051Z"
-        },
-        ....
-      ]
-  */
-  // *************************************************************
-  // getTasksInRangeAltAddress: (req, res) => {
-  //   const { range } = req.params;
-  //   const {
-  //     streetAddress,
-  //     city,
-  //     state,
-  //     zipcode,
-  //   } = req.body;
-  //   const addressQuery = `${streetAddress}+${city}+${state}+${zipcode}`;
-  //   let coordinate;
-
-  //   const queryDb = () => {
-  //     const queryStr = `
-  //       SELECT
-  //         task_id,
-  //         (
-  //           SELECT ROW_TO_JSON(reqname)
-  //           FROM (
-  //             SELECT
-  //               user_id,
-  //               firstname,
-  //               lastname,
-  //               email,
-  //               address_id,
-  //               karma,
-  //               task_count,
-  //               avg_rating,
-  //               profile_picture_url
-  //             FROM nexdoor.users
-  //             WHERE user_id=nexdoor.tasks.requester_id
-  //           ) reqname
-  //         ) as requester,
-  //         (
-  //           SELECT ROW_TO_JSON(helpname)
-  //           FROM (
-  //             SELECT
-  //               user_id,
-  //               firstname,
-  //               lastname,
-  //               email,
-  //               address_id,
-  //               karma,
-  //               task_count,
-  //               avg_rating,
-  //               profile_picture_url
-  //             FROM nexdoor.users
-  //             WHERE user_id=nexdoor.tasks.helper_id
-  //           ) helpname
-  //         ) AS helper,
-  //         (
-  //           SELECT ROW_TO_JSON(loc)
-  //           FROM (
-  //             SELECT *
-  //             FROM nexdoor.address
-  //             WHERE address_id=nexdoor.tasks.address_id
-  //           ) loc
-  //         ) AS address,
-  //         description,
-  //         car_required,
-  //         physical_labor_required,
-  //         status,
-  //         category,
-  //         start_date,
-  //         end_date,
-  //         start_time,
-  //         duration,
-  //         timestamp_requested
-  //       FROM nexdoor.tasks
-  //       WHERE (
-  //         (
-  //           SELECT coordinate
-  //           FROM nexdoor.address
-  //           WHERE address_id=nexdoor.tasks.address_id
-  //         )
-  //         <@>
-  //         (${coordinate})
-  //       ) < ${range}
-  //       ORDER BY
-  //         start_date,
-  //         start_time
-  //       LIMIT 100;
-  //     ;`;
-  //     db.query(queryStr)
-  //       .then((data) => {
-  //         res.status(200).send(data.rows);
-  //       })
-  //       .catch((err) => {
-  //         res.status(400).send(err.stack);
-  //       });
-  //   };
-
-  //   getCoordinates(addressQuery)
-  //     .then((testCoord) => {
-  //       coordinate = `point(${testCoord.lng},${testCoord.lat})`;
-  //     })
-  //     .then(() => {
-  //       queryDb();
-  //     })
-  //     .catch((err) => {
-  //       res.status(400).send('Error getting coordinates', err.stack);
-  //     });
-  // },
   // *************************************************************
 
   // *************************************************************
@@ -682,7 +318,6 @@ const taskControllers = {
       const tasks = await tasksService.getReqTasksByUser(userId);
       res.status(200).send(tasks);
     } catch (err) {
-      // console.log('err getting tasks in range', err.stack);
       res.status(400).send(err.stack);
     }
   },
@@ -854,7 +489,6 @@ const taskControllers = {
   */
   // *************************************************************
   closeTask: async (req, res) => {
-    // const { taskId, rating } = req.params;
     const params = {
       taskId: req.params.taskId,
       rating: req.params.rating,
