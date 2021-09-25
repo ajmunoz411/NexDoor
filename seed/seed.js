@@ -15,7 +15,7 @@ users.forEach((user) => {
     email: pieces[8],
     imgUrl: pieces[9],
   };
-  axios.post('http://localhost:3500/api/user', body)
+  axios.post('http://localhost:3500/api/users', body)
     .catch((err) => {
       console.log('err seeding users', err.stack);
     });
@@ -23,7 +23,7 @@ users.forEach((user) => {
 
 tasks.forEach((task) => {
   const { userId, body } = task;
-  axios.post(`http://localhost:3500/api/task/home/${userId}`, body)
+  axios.post(`http://localhost:3500/api/tasks/home/${userId}`, body)
     .catch((err) => {
       console.log('err seeding tasks', err.stack);
     });
