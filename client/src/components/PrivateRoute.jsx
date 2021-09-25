@@ -1,16 +1,16 @@
-import React, { useContext, createContext, useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import { Route, Redirect } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import currentUser from './AppReducers/currentUserReducer';
 import axios from 'axios';
+// import currentUser from './AppReducers/currentUserReducer';
 
 export default function PrivateRoute({ children, ...rest }) {
-  const [ isLoaded, setIsLoaded ] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   const userData = useSelector((store) => store.currentUserReducer.userData);
   const dispatch = useDispatch();
 
   function checkForSession() {
-    console.log(document.cookie);
+    // console.log(document.cookie);
     axios.get('http://localhost:3500/api/users/session', {
       headers: { 'content-type': 'application/json' },
       withCredentials: true,
@@ -26,8 +26,8 @@ export default function PrivateRoute({ children, ...rest }) {
       .catch((err) => {
         console.log(err);
         setIsLoaded(true);
-      })
-  };
+      });
+  }
 
   useEffect(() => {
     checkForSession();

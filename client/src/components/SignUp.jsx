@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import {
-  Avatar, Button, CssBaseline, TextField, FormControlLabel,
-  Checkbox, Link, Grid, Box, Typography, Container,
+  Avatar, Button, CssBaseline, TextField,
+  Link, Grid, Box, Typography, Container,
 } from '@material-ui/core';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import { makeStyles } from '@material-ui/core/styles';
