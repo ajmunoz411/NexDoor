@@ -119,7 +119,7 @@ const taskControllers = {
   //   Returns - array of task objects, ordered by start date and start time
   // *************************************************************
   /*
-    GET /api/tasks/:userId/:quantity/:offset
+    GET /api/tasks/all/:userId/:quantity/:offset
     [
       {
         "task_id": 12,
