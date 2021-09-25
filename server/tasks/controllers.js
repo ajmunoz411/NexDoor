@@ -413,8 +413,8 @@ const taskControllers = {
     };
 
     try {
-      const confirmation = await tasksService.updateHelper(params);
-      res.status(200).send(confirmation);
+      const confId = await tasksService.updateHelper(params);
+      res.status(200).send(confId);
     } catch (err) {
       res.status(400).send(err.stack);
     }

@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
 /* eslint-disable spaced-comment */
 /* eslint-disable max-len */
-const bcrypt = require('bcrypt');
-const uuid = require('uuid');
+// const uuid = require('uuid');
 const session = require('express-session');
+const bcrypt = require('bcrypt');
 const getCoordinates = require('../tasks/coordinates');
 const usersService = require('./service');
 
@@ -299,6 +299,7 @@ const userControllers = {
       res.status(400).send(err.stack);
     }
   },
+
   // *************************************************************
   authenticateSession: async (req, res) => {
     if (req.session.user_id) {

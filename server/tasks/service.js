@@ -435,6 +435,7 @@ const taskModels = {
 
   updateHelper: async (params) => {
     const { taskId, userId } = params;
+
     const queryStr = `
       UPDATE nexdoor.tasks
       SET
@@ -443,6 +444,7 @@ const taskModels = {
       WHERE task_id=${taskId}
       RETURNING task_id
     `;
+
     const data = await db.query(queryStr);
     const taskIdRet = data.rows[0];
     return taskIdRet;
@@ -457,6 +459,7 @@ const taskModels = {
       WHERE task_id=${taskId}
       RETURNING task_id
     ;`;
+
     const data = await db.query(queryStr);
     const taskIdRet = data.rows[0];
     return taskIdRet;
@@ -464,12 +467,14 @@ const taskModels = {
 
   changeTaskStatus: async (params) => {
     const { status, taskId } = params;
+
     const queryStr = `
       UPDATE nexdoor.tasks
       SET status='${status}'
       WHERE task_id=${taskId}
       RETURNING task_id
     ;`;
+
     const data = await db.query(queryStr);
     const taskIdRet = data.rows[0];
     return taskIdRet;
@@ -542,6 +547,7 @@ const taskModels = {
       DELETE FROM nexdoor.tasks
       WHERE task_id=${taskId}
     ;`;
+
     await db.query(queryStr);
     return `${taskId} deleted`;
   },
@@ -810,7 +816,7 @@ const taskModels = {
       ;`;
 
     const data = await db.query(queryStr);
-    const tasks = data.rows;
+    const tasks = data.rows[0];
     return tasks;
   },
 
@@ -1056,7 +1062,7 @@ const taskModels = {
         ) as allothers
       `;
     const data = await db.query(queryStr);
-    const tasks = data.rows;
+    const tasks = data.rows[0];
     return tasks;
   },
 

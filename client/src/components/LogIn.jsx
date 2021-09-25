@@ -84,9 +84,8 @@ const LogIn = () => {
       withCredentials: true,
     })
       .then((response) => {
-        console.log('response', response.data.rows);
         if (response.status === 200) {
-          getUserData(Number(response.data.rows.user_id));
+          getUserData(Number(response.data.userId));
           // redirect to home page
         } else {
           console.log('error logging in');
