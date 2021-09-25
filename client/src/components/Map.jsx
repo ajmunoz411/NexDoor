@@ -1,3 +1,4 @@
+/* eslint-disable react/no-array-index-key */
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
@@ -60,8 +61,8 @@ const Map = () => {
         center={defaultCenter}
       >
         {
-          coordinates.map((coordinate) => (
-            <Marker key={coordinate.lng} position={coordinate} />
+          coordinates.map((coordinate, i) => (
+            <Marker key={i} position={coordinate} />
           ))
         }
       </GoogleMap>

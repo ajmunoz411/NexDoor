@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+/* eslint-disable jsx-a11y/anchor-is-valid */
+import React, { useState } from 'react';
 import {
   Avatar, Button, CssBaseline, TextField, FormControlLabel,
   Checkbox, Link, Grid, Box, Typography, Container,
@@ -6,9 +7,9 @@ import {
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import { makeStyles } from '@material-ui/core/styles';
 import { useHistory } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import currentUser from './AppReducers/currentUserReducer';
+import { useDispatch } from 'react-redux';
 import axios from 'axios';
+// import currentUser from './AppReducers/currentUserReducer';
 
 function Copyright() {
   return (
@@ -86,7 +87,6 @@ const LogIn = () => {
       .then((response) => {
         if (response.status === 200) {
           getUserData(Number(response.data.userId));
-          // redirect to home page
         } else {
           console.log('error logging in');
         }

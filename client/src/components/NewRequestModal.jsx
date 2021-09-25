@@ -96,7 +96,6 @@ function NewRequestModal() {
     }
   };
 
-  // resets input values & validation errs when you successfully submit form
   function resetReqAndErr() {
     setRequest({
       streetAddress: '',
@@ -116,7 +115,6 @@ function NewRequestModal() {
     setValidationErrors({});
   }
 
-  // Validate all inputs
   function validate(values) {
     const errors = {};
     if (!values.streetAddress) {
@@ -158,7 +156,7 @@ function NewRequestModal() {
   const postNewRequest = () => {
     axios.post(`${url}/api/tasks/check/${user.user_id}`, request)
       .then((response) => {
-        console.log(response.data);
+        // console.log(response.data);
         cleanInputAndClose();
       })
       .catch((err) => {
@@ -170,7 +168,7 @@ function NewRequestModal() {
   const editRequest = () => {
     axios.put(`${url}/api/tasks/edit/`, request)
       .then((response) => {
-        console.log(response.data);
+        // console.log(response.data);
         cleanInputAndClose();
       })
       .catch((err) => {
@@ -179,12 +177,10 @@ function NewRequestModal() {
       });
   };
 
-  // submit form info with validation check
   function handleSubmit(event) {
     event.preventDefault();
     const errors = validate(request);
     if (Object.keys(errors).length === 0) {
-      console.log(request);
       resetReqAndErr();
       if (mode === 'new') {
         postNewRequest();

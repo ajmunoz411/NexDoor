@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Grid, Avatar } from '@material-ui/core';
+import { Grid, Avatar } from '@material-ui/core';
 import { Button, Modal, Form } from 'react-bootstrap';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
@@ -22,27 +22,25 @@ const ActiveModal = () => {
   const [reviewStar, setReviewStar] = useState('');
 
   const selectTask = useSelector((store) => store.selectedTaskReducer.task);
-  console.log('selected task', selectTask);
   const history = useHistory();
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
   const handleReview = (e) => setNewReview(e.target.value);
 
-  console.log(newReview);
   const changeRating = (val) => {
     setRatings(val);
 
     if (val === 1) {
-      setReviewStar('1 star - Poor')
+      setReviewStar('1 star - Poor');
     } else if (val === 2) {
-      setReviewStar('2 stars - Fair')
+      setReviewStar('2 stars - Fair');
     } else if (val === 3) {
-      setReviewStar('3 stars - Average')
+      setReviewStar('3 stars - Average');
     } else if (val === 4) {
-      setReviewStar('4 stars - Good')
+      setReviewStar('4 stars - Good');
     } else if (val === 5) {
-      setReviewStar('5 stars - Great')
+      setReviewStar('5 stars - Great');
     }
   };
 
@@ -59,10 +57,21 @@ const ActiveModal = () => {
   return (
     <div>
       <MarkFinishButton>
-        <Button onClick={handleShow} style={{ backgroundColor: "#D65454", borderRadius: '24px', height: '50px', width: '200px', borderColor: '#D65454' }}>Mark as finished!</Button>
+        <Button
+          onClick={handleShow}
+          style={{
+            backgroundColor: '#D65454',
+            borderRadius: '24px',
+            height: '50px',
+            width: '200px',
+            borderColor: '#D65454',
+          }}
+        >
+          Mark as finished!
+        </Button>
       </MarkFinishButton>
       <Modal show={show} onHide={handleClose}>
-        <Modal.Header >
+        <Modal.Header>
           <Grid
             container
             direction="row"
@@ -77,16 +86,16 @@ const ActiveModal = () => {
                 <Avatar src={selectTask.helper.profile_picture_url} />
               </div>
               <br />
-              <div >
+              <div>
                 {selectTask.helper.firstname}
                 &nbsp;
                 {selectTask.helper.lastname}
               </div>
               <br />
-              <div >
+              <div>
                 {selectTask.helper.task_count > 0 ? (
                   <span>
-                    <StarIcon style={{ fill: "red" }} />
+                    <StarIcon style={{ fill: 'red' }} />
                     {selectTask.helper.avg_rating}
                     &nbsp;
                     ({selectTask.helper.task_count})

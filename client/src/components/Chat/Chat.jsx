@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import Message from './Message';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import { useSelector } from 'react-redux';
 import { IconButton } from '@material-ui/core';
 import SendTwoToneIcon from '@material-ui/icons/SendTwoTone';
 import { DateTime } from 'luxon';
+import Message from './Message';
 
 const socket = io('http://localhost:3200');
 
@@ -15,13 +15,10 @@ const Chat = () => {
   if (taskId === undefined) {
     return <></>;
   }
-  // input -> two user id's
-  // get existing chat messages from database
-  // display existing chat messages
-  //
-  let user = useSelector((store) => store.currentUserReducer.userData); // from react-redux*********
-  let userId = user.user_id;
-  // console.log('userId: ', userId);
+
+  const user = useSelector((store) => store.currentUserReducer.userData);
+  const userId = user.user_id;
+
   const url = 'http://localhost:3500';
   const [currentMessage, setCurrentMessage] = useState('');
   const [currentTask, setCurrentTask] = useState(taskId);
@@ -29,7 +26,7 @@ const Chat = () => {
   const [lastName, setLastName] = useState();
   const [messages, setMessages] = useState([]);
 
-  const [currentUser, setCurrentUser] = useState(userId);//set to user id*********
+  const [currentUser, setCurrentUser] = useState(userId);
 
   const handleChange = (e) => {
     setCurrentMessage(e.target.value);
@@ -43,27 +40,23 @@ const Chat = () => {
     let trail = 'AM';
     let hour = Number(time.substring(0, 2));
     const minutes = time.slice(2);
-    // console.log(minutes);
-    // console.log(hour);
+
     if (hour >= 12) {
       hour -= 12;
       trail = 'PM';
     }
 
-    return hour + minutes + ' ' + trail;
+    return `${hour}${minutes} ${trail}`;
   };
 
   const handleSend = () => {
-    // send Message to database
-    // add message to messages and display render on screen(setstate)
     const d = new Date();
     const dStr = d.toString();
     const currentDayOfMonth = d.getDate();
-    const currentMonth = d.getMonth(); // Be careful! January is 0, not 1
+    const currentMonth = d.getMonth();
     const currentYear = d.getFullYear();
-    // const timeString = dStr.slice(16, 21);
     const timeString = formatTime(dStr.slice(16, 21));
-    const dateString = (currentMonth + 1) + "/" + currentDayOfMonth + "/" + currentYear;
+    const dateString = `${currentMonth + 1}/${currentDayOfMonth}/${currentYear}`;
 
     const message = {
       userId,
@@ -73,16 +66,10 @@ const Chat = () => {
       date: dateString,
       time: timeString,
     };
-    socket.emit('send-message', { task: currentTask, message: message });
+    socket.emit('send-message', { task: currentTask, message });
 
-    setMessages((prev) => [...prev, message]); // ???
+    setMessages((prev) => [...prev, message]);
 
-    // axios.post(`${url}/${taskId}/${userId}`)
-    //   .catch((err) => {
-    //     throw (err);
-    //   });
-
-    // add message to
     const resetElements = document.getElementsByClassName('messageInput');
     for (let i = 0; i < resetElements.length; i++) {
       resetElements[i].value = '';
@@ -91,8 +78,6 @@ const Chat = () => {
   };
 
   useEffect(() => {
-    // const result = window.prompt('Enter name and task number');
-    // const resultContainer = result.split(' ');
     setFirstName();
     setLastName();
     setCurrentUser(userId);
@@ -104,13 +89,7 @@ const Chat = () => {
   }, [taskId, userId]);
 
   useEffect(() => {
-    // console.log('hi');
-    // console.log('result: ', result);
-    // setCurrentTask(taskId);
-    // socket.emit('join', 'room1');
     socket.on(currentTask, (data) => {
-      // console.log('currentTask: ', currentTask);
-      // console.log('data: ', data);
       setMessages((prev) => [...prev, data]);
     });
   }, [currentTask]);
@@ -119,11 +98,6 @@ const Chat = () => {
     const elem = document.getElementById('allMessages');
     elem.scrollTop = elem.scrollHeight;
   }, [messages]);
-
-  // useEffect(() => {
-  //   const elem = document.getElementById('allMessages');
-  //   elem.scrollTop = elem.scrollHeight;
-  // }, []);
 
   const chatStyle = {
     position: 'relative',
@@ -150,7 +124,6 @@ const Chat = () => {
       time: timeFormatted,
     };
 
-    console.log(message);
     axios.post(`${url}/api/messages/${taskId}/${userId}`, message)
       .then((res) => console.log(res))
       .then(() => resetInput())
@@ -180,13 +153,9 @@ const Chat = () => {
     <div style={chatStyle}>
       <div style={messageContaierStyle} id="allMessages">
         {messages.map((message, idx) => {
-          // console.log('current User: ', currentUser);
-          // console.log('info: ', message.firstname, ' ', message.lastname);
           const user_1 = userId;
-          // console.log(messages);
           let isUser;
-          // console.log(user_1, currentUser);
-          if (message.user_id === userId) {//set user to user id *********
+          if (message.user_id === userId) {
             isUser = true;
           } else {
             isUser = false;
@@ -199,16 +168,11 @@ const Chat = () => {
           style={{ width: '45vw', borderRadius: '25px', height: '6vh', borderColor: 'grey' }}
           className="messageInput" placeholder="Write message here..." onChange={handleChange} />
         <IconButton onClick={() => {
-          // handleSend();
           handleMessage();
         }} > <SendTwoToneIcon /></IconButton>
-        {/* <button onClick={handleSend}>Send</button> */}
       </div>
     </div>
   );
 };
 
 export default Chat;
-
-// are messages already in order??
-// using user_id rather than name would be preferable

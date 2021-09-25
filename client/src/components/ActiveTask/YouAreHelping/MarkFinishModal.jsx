@@ -1,10 +1,10 @@
+// import { useSelector } from 'react-redux';
+// import Ratings from 'react-ratings-declarative';
+// import StarIcon from '@material-ui/icons/Star';
 import React, { useState } from 'react';
-import { Container, Grid, Avatar } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 import { Button, Modal, Form } from 'react-bootstrap';
-import { useSelector } from 'react-redux';
-import Ratings from 'react-ratings-declarative';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import StarIcon from '@material-ui/icons/Star';
 import styled from 'styled-components';
 
 const MarkFinishButton = styled.div`
@@ -20,8 +20,6 @@ const MarkFinishModal = () => {
   const handleClose = () => setAppear(false);
   const handleShow = () => setAppear(true);
   const handleFinish = (e) => setTaskFinish(e.target.value);
-
-  console.log(taskFinish);
 
   return (
     <div>
